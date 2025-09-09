@@ -1,0 +1,73 @@
+{
+  "name": "@adaas/a-server",
+  "version": "0.0.1",
+  "description": "SDK to create a server with ease. Build your backend server with modular structure and use it within or outside the ADAAS ecosystem.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "nodemonConfig": {
+    "ignore": [
+      "**/*.test.ts",
+      "**/*.spec.ts",
+      ".git",
+      "node_modules"
+    ],
+    "watch": [
+      "examples",
+      "src"
+    ],
+    "exec": "node -r tsconfig-paths/register -r ts-node/register ",
+    "ext": "ts, js"
+  },
+  "scripts": {
+    "test": "jest",
+    "example:simple-server": "nodemon ./examples/simple-server/concept.ts",
+    "example:concept": "nodemon ./examples/concept-server/concept.ts",
+    "test:test": "nodemon ./src/test/app.ts",
+    "publish": "npm run build && git add . && git commit -m \"new version created :: $(cat package.json | grep version | head -1  | awk -F: '{ print $2 }'  | sed 's/[\",]//g')\" && npm version patch && npm publish --access public",
+    "preversion": "echo test",
+    "version": "echo git add .",
+    "postversion": "git push --no-verify && git push --tags --no-verify && echo \"\n======Version Pushed Successfully=====\n\" ",
+    "echo-version": "echo $npm_package_version",
+    "build": "rm -rf ./dist && tsc --declaration --project tsconfig.build.json && tscpaths -p tsconfig.build.json -s ./ -o ./dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ADAAS-org/adaas-a-server.git"
+  },
+  "keywords": [
+    "sdk",
+    "ai",
+    "rag"
+  ],
+  "author": "adaas.org",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ADAAS-org/adaas-a-server/issues"
+  },
+  "homepage": "https://github.com/ADAAS-org/adaas-a-server#readme",
+  "dependencies": {
+    "@adaas/a-concept": "^0.0.50",
+    "@adaas/a-utils": "^0.0.4",
+    "@types/node": "^20.10.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.14",
+    "@types/jest": "^29.5.12",
+    "@types/mocha": "^10.0.6",
+    "axios": "^1.7.2",
+    "chai": "^5.1.0",
+    "dotenv": "^16.4.5",
+    "jest": "^29.7.0",
+    "mocha": "^10.4.0",
+    "nodemon": "^3.1.4",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "tscpaths": "^0.0.9"
+  },
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  }
+}
