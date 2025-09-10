@@ -41,9 +41,9 @@ export class User extends A_Entity<NewUser, UserJSON> {
     fromNew(newEntity: NewUser): void {
         this.aseid = new ASEID({
             id: newEntity.id,
-            namespace: 'users',
-            scope: 'users',
-            entity: 'user'
+            namespace: 'users1',
+            scope: 'users2',
+            entity: 'user3'
         });
 
         this.email = newEntity.email;
