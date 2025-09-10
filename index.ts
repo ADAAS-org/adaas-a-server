@@ -8,6 +8,7 @@ export { A_ServerContainer } from './src/containers/A-Server/A-Server.container'
 export { A_Server } from './src/context/A-Server/A_Server.context';
 export { A_ProxyConfig } from './src/context/A_ProxyConfig/A_ProxyConfig.context';
 export { A_StaticConfig } from './src/context/A-StaticConfig/A-StaticConfig.context';
+export { A_ListQueryFilter } from './src/context/A_ListQueryFilter/A_ListQueryFilter.context';
 
 //  Entities Export
 export { A_Request } from './src/entities/A-Request/A-Request.entity';

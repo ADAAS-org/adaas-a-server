@@ -2,6 +2,7 @@ export { A_ServerContainer } from './src/containers/A-Server/A-Server.container'
 export { A_Server } from './src/context/A-Server/A_Server.context';
 export { A_ProxyConfig } from './src/context/A_ProxyConfig/A_ProxyConfig.context';
 export { A_StaticConfig } from './src/context/A-StaticConfig/A-StaticConfig.context';
+export { A_ListQueryFilter } from './src/context/A_ListQueryFilter/A_ListQueryFilter.context';
 export { A_Request } from './src/entities/A-Request/A-Request.entity';
 export { A_Response } from './src/entities/A-Response/A-Response.entity';
 export { A_Route } from './src/entities/A-Route/A-Route.entity';
