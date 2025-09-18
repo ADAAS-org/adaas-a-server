@@ -1,26 +1,22 @@
-import { A_Entity, A_TYPES__Entity_JSON } from "@adaas/a-concept";
+import { A_Entity } from "@adaas/a-concept";
 import { A_SERVER_TYPES__A_EntityListConstructor, A_SERVER_TYPES__A_EntityListPagination, A_SERVER_TYPES__A_EntityListSerialized } from "./A_EntityList.entity.types";
 /**
  * A-EntityList
  *
  * Entity that represents a list of entities with pagination of particular type
  */
-export declare class A_EntityList<SerializedEntityType extends A_TYPES__Entity_JSON = A_TYPES__Entity_JSON> extends A_Entity<A_SERVER_TYPES__A_EntityListConstructor, A_SERVER_TYPES__A_EntityListSerialized> {
-    protected _entityConstructor: {
-        new (...args: any[]): A_Entity<any, SerializedEntityType>;
-    };
-    protected _items: Array<A_Entity>;
+export declare class A_EntityList<EntityType extends A_Entity = A_Entity> extends A_Entity<A_SERVER_TYPES__A_EntityListConstructor, A_SERVER_TYPES__A_EntityListSerialized> {
+    protected _entityConstructor: new (...args: any[]) => EntityType;
+    protected _items: Array<EntityType>;
     protected _pagination: A_SERVER_TYPES__A_EntityListPagination;
     /**
      * Returns the entity constructor used for the list
      */
-    get entityConstructor(): {
-        new (...args: any[]): A_Entity<any, SerializedEntityType>;
-    };
+    get entityConstructor(): new (...args: any[]) => EntityType;
     /**
      * Returns the list of items contained in the entity list
      */
-    get items(): Array<A_Entity>;
+    get items(): Array<EntityType>;
     /**
      * Returns pagination information about the entity list
      */
@@ -39,11 +35,11 @@ export declare class A_EntityList<SerializedEntityType extends A_TYPES__Entity_J
      * @param items
      * @param pagination
      */
-    fromList(items: Array<A_Entity> | Array<SerializedEntityType>, pagination?: A_SERVER_TYPES__A_EntityListPagination): void;
+    fromList(items: Array<EntityType> | Array<ReturnType<EntityType['toJSON']>>, pagination?: A_SERVER_TYPES__A_EntityListPagination): void;
     /**
      * Serializes the EntityList to a JSON object
      *
      * @returns
      */
-    toJSON(): A_SERVER_TYPES__A_EntityListSerialized;
+    toJSON(): A_SERVER_TYPES__A_EntityListSerialized<EntityType>;
 }

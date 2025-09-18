@@ -16,13 +16,14 @@ import { ASEID } from "@adaas/a-utils";
  * 
  * Entity that represents a list of entities with pagination of particular type
  */
-export class A_EntityList<SerializedEntityType extends A_TYPES__Entity_JSON = A_TYPES__Entity_JSON> extends A_Entity<
+export class A_EntityList<
+    EntityType extends A_Entity = A_Entity,
+> extends A_Entity<
     A_SERVER_TYPES__A_EntityListConstructor,
     A_SERVER_TYPES__A_EntityListSerialized
 > {
-
-    protected _entityConstructor!: { new(...args: any[]): A_Entity<any, SerializedEntityType> };
-    protected _items: Array<A_Entity> = [];
+    protected _entityConstructor!: new (...args: any[]) => EntityType;
+    protected _items: Array<EntityType> = [];
     protected _pagination: A_SERVER_TYPES__A_EntityListPagination = {
         total: 0,
         page: 1,
@@ -33,14 +34,14 @@ export class A_EntityList<SerializedEntityType extends A_TYPES__Entity_JSON = A_
     /**
      * Returns the entity constructor used for the list
      */
-    get entityConstructor(): { new(...args: any[]): A_Entity<any, SerializedEntityType> } {
+    get entityConstructor(): new (...args: any[]) => EntityType {
         return this._entityConstructor;
     }
 
     /**
      * Returns the list of items contained in the entity list
      */
-    get items(): Array<A_Entity> {
+    get items(): Array<EntityType> {
         return this._items;
     }
 
@@ -67,7 +68,7 @@ export class A_EntityList<SerializedEntityType extends A_TYPES__Entity_JSON = A_
             id: (new Date()).getTime().toString(),
         });
 
-        this._entityConstructor = newEntity.constructor as { new(...args: any[]): A_Entity<any, SerializedEntityType> };
+        this._entityConstructor = newEntity.constructor as new (...args: any[]) => EntityType;
     }
 
 
@@ -81,12 +82,12 @@ export class A_EntityList<SerializedEntityType extends A_TYPES__Entity_JSON = A_
      * @param pagination 
      */
     fromList(
-        items: Array<A_Entity> | Array<SerializedEntityType>,
+        items: Array<EntityType> | Array<ReturnType<EntityType['toJSON']>>,
         pagination?: A_SERVER_TYPES__A_EntityListPagination
     ) {
         this._items = items.map(item => {
             if (item instanceof A_Entity) {
-                return item;
+                return item as EntityType;
             } else {
                 const entity = new this._entityConstructor(item);
                 return entity;
@@ -109,10 +110,10 @@ export class A_EntityList<SerializedEntityType extends A_TYPES__Entity_JSON = A_
      * 
      * @returns 
      */
-    toJSON(): A_SERVER_TYPES__A_EntityListSerialized {
+    toJSON(): A_SERVER_TYPES__A_EntityListSerialized<EntityType> {
         return {
             ...super.toJSON(),
-            items: this._items.map(i => i.toJSON()),
+            items: this._items.map(i => i.toJSON()) as ReturnType<EntityType['toJSON']>[],
             pagination: this._pagination
         }
     }

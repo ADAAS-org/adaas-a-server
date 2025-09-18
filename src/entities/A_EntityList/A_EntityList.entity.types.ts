@@ -11,8 +11,8 @@ export enum A_SERVER_TYPES__A_EntityListEvent {
     Load = 'load',
 }
 
-export type A_SERVER_TYPES__A_EntityListSerialized = {
-    items: A_TYPES__Entity_JSON[],
+export type A_SERVER_TYPES__A_EntityListSerialized<EntityTypes extends A_Entity = A_Entity> = {
+    items: Array<ReturnType<EntityTypes['toJSON']>>,
     type: string,
     pagination: A_SERVER_TYPES__A_EntityListPagination
 } & A_TYPES__Entity_JSON;
