@@ -22,6 +22,16 @@ class A_EntityFactory extends a_concept_1.A_Fragment {
             });
         }
     }
+    add(param1, param2) {
+        switch (true) {
+            case typeof param1 === 'string' && !!param2:
+                this._entities.set(param1, param2);
+                break;
+            case typeof param1 !== 'string':
+                this._entities.set(param1.entity, param1);
+                break;
+        }
+    }
     has(param1) {
         let name;
         switch (true) {

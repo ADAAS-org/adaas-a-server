@@ -22,7 +22,7 @@ export class A_EntityList<
     A_SERVER_TYPES__A_EntityListConstructor,
     A_SERVER_TYPES__A_EntityListSerialized
 > {
-    protected _entityConstructor!: new (...args: any[]) => EntityType;
+    protected _entityConstructor!: new (...args: ConstructorParameters<typeof A_Entity>) => EntityType;
     protected _items: Array<EntityType> = [];
     protected _pagination: A_SERVER_TYPES__A_EntityListPagination = {
         total: 0,
@@ -34,7 +34,7 @@ export class A_EntityList<
     /**
      * Returns the entity constructor used for the list
      */
-    get entityConstructor(): new (...args: any[]) => EntityType {
+    get entityConstructor(): new (...args: ConstructorParameters<typeof A_Entity>) => EntityType {
         return this._entityConstructor;
     }
 

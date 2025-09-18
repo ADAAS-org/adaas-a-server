@@ -50,7 +50,7 @@ export class UsersRepository extends A_Component {
     list(
         @A_Inject(A_ListQueryFilter) query: A_ListQueryFilter<['page', 'itemsPerPage']>,
         @A_Inject(A_Logger) logger: A_Logger,
-        @A_Inject(A_EntityList<UserJSON>) list: A_EntityList<UserJSON>
+        @A_Inject(A_EntityList<User>) list: A_EntityList<User>
     ) {
         console.log('Listing users with query:', query);
         console.log('Listing users with query:', list);

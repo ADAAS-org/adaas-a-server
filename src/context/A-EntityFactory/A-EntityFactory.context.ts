@@ -30,7 +30,7 @@ export class A_EntityFactory extends A_Fragment {
     }
 
 
-    private _setEntities(
+    protected _setEntities(
         entities: A_SERVER_TYPES__AEntityFactoryConstructor2 | A_SERVER_TYPES__AEntityFactoryConstructor1 = []
     ) {
         if (Array.isArray(entities)) {
@@ -43,6 +43,32 @@ export class A_EntityFactory extends A_Fragment {
             });
         }
     }
+
+
+    add(
+       key: string,
+       entity: typeof A_Entity
+    ): void
+    add(
+        entity: typeof A_Entity
+    ): void
+    add(
+        param1: string | typeof A_Entity,
+        param2?: typeof A_Entity
+    ): void {
+        switch (true) {
+            case typeof param1 === 'string' && !!param2:
+                this._entities.set(param1, param2);
+
+                break;
+
+            case typeof param1 !== 'string':
+                this._entities.set(param1.entity, param1);
+
+                break;
+        }
+    }
+   
 
 
     has(

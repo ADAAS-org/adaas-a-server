@@ -6,7 +6,9 @@ export declare class A_EntityFactory extends A_Fragment {
     constructor(map: A_SERVER_TYPES__AEntityFactoryConstructor1);
     constructor(entities: A_SERVER_TYPES__AEntityFactoryConstructor2);
     constructor(map: A_SERVER_TYPES__AEntityFactoryConstructor1, entities: A_SERVER_TYPES__AEntityFactoryConstructor2);
-    private _setEntities;
+    protected _setEntities(entities?: A_SERVER_TYPES__AEntityFactoryConstructor2 | A_SERVER_TYPES__AEntityFactoryConstructor1): void;
+    add(key: string, entity: typeof A_Entity): void;
+    add(entity: typeof A_Entity): void;
     has(aseid: ASEID): boolean;
     has(
     /**

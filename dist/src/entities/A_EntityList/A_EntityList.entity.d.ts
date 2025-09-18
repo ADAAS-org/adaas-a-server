@@ -6,13 +6,13 @@ import { A_SERVER_TYPES__A_EntityListConstructor, A_SERVER_TYPES__A_EntityListPa
  * Entity that represents a list of entities with pagination of particular type
  */
 export declare class A_EntityList<EntityType extends A_Entity = A_Entity> extends A_Entity<A_SERVER_TYPES__A_EntityListConstructor, A_SERVER_TYPES__A_EntityListSerialized> {
-    protected _entityConstructor: new (...args: any[]) => EntityType;
+    protected _entityConstructor: new (...args: ConstructorParameters<typeof A_Entity>) => EntityType;
     protected _items: Array<EntityType>;
     protected _pagination: A_SERVER_TYPES__A_EntityListPagination;
     /**
      * Returns the entity constructor used for the list
      */
-    get entityConstructor(): new (...args: any[]) => EntityType;
+    get entityConstructor(): new (...args: ConstructorParameters<typeof A_Entity>) => EntityType;
     /**
      * Returns the list of items contained in the entity list
      */
