@@ -29,7 +29,6 @@ const A_ListQueryFilter_context_1 = require("../../context/A_ListQueryFilter/A_L
 class A_ListingController extends a_concept_1.A_Component {
     list(request, response, factory, scope, config) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('A_ListingController.list', request.params, request.query);
             const constructor = factory.resolveByName(request.params.type);
             if (constructor) {
                 const entityList = new A_EntityList_entity_1.A_EntityList({

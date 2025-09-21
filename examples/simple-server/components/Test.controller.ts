@@ -10,9 +10,13 @@ export class TestController extends A_Component {
 
     @A_Feature.Define({
         name: 'test',
-        invoke: false
+        invoke: false,
     })
-    @A_Router.Get('/test')
+    @A_Router.Get({
+        path: '/test',
+        version: 'v1',
+        prefix: 'test'
+    })
     async test(
         @A_Inject(A_Request) request: A_Request,
         @A_Inject(A_Response) response: A_Response,

@@ -27,8 +27,6 @@ export class A_ListingController extends A_Component {
         @A_Inject(A_Config) config: A_Config<'A_LIST_ITEMS_PER_PAGE' | 'A_LIST_PAGE'>
     ) {
 
-        console.log('A_ListingController.list', request.params, request.query);
-
         const constructor = factory.resolveByName(request.params.type);
 
         if (constructor) {

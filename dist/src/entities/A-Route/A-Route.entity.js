@@ -3,8 +3,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.A_Route = void 0;
 class A_Route {
     constructor(param1, param2) {
-        this.path = param1 instanceof RegExp ? param1.source : param1;
+        this.url = param1 instanceof RegExp ? param1.source : param1;
         this.method = param2 || 'GET';
+    }
+    /**
+     * returns path only without query and hash
+     */
+    get path() {
+        return this.url.split('?')[0].split('#')[0];
     }
     get params() {
         var _a;
@@ -31,6 +37,23 @@ class A_Route {
             }
         }
         return params;
+    }
+    extractQuery(url) {
+        const query = {};
+        // Take only the part after "?"
+        const queryString = url.split('?')[1];
+        if (!queryString)
+            return query;
+        // Remove fragment (#...) if present
+        const cleanQuery = queryString.split('#')[0];
+        // Split into key=value pairs
+        for (const pair of cleanQuery.split('&')) {
+            if (!pair)
+                continue;
+            const [key, value = ''] = pair.split('=');
+            query[decodeURIComponent(key)] = decodeURIComponent(value);
+        }
+        return query;
     }
     toString() {
         // path can be like /api/v1/users/:id
