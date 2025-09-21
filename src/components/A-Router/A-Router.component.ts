@@ -206,8 +206,6 @@ export class A_Router extends A_Component {
         const { method, url } = request;
         const route = new A_Route(url, method);
 
-        console.log('--- Incoming Request ---',route.toString());
-
         if (config.get('DEV_MODE')) {
             logger.log(`Incoming request: ${request.method} ${request.url}`);
             logger.log(`Identified route: ${route.toString()}`);

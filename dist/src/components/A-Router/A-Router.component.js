@@ -155,7 +155,6 @@ class A_Router extends a_concept_1.A_Component {
         return __awaiter(this, void 0, void 0, function* () {
             const { method, url } = request;
             const route = new A_Route_entity_1.A_Route(url, method);
-            console.log('--- Incoming Request ---', route.toString());
             if (config.get('DEV_MODE')) {
                 logger.log(`Incoming request: ${request.method} ${request.url}`);
                 logger.log(`Identified route: ${route.toString()}`);
