@@ -1,6 +1,6 @@
 {
   "name": "@adaas/a-server",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "SDK to create a server with ease. Build your backend server with modular structure and use it within or outside the ADAAS ecosystem.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
