@@ -47,7 +47,7 @@
   },
   "homepage": "https://github.com/ADAAS-org/adaas-a-server#readme",
   "dependencies": {
-    "@adaas/a-concept": "^0.0.54",
+    "@adaas/a-concept": "^0.0.55",
     "@adaas/a-utils": "^0.0.5",
     "@types/node": "^20.10.0"
   },

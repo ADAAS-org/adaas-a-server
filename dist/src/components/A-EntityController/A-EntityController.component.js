@@ -35,7 +35,6 @@ class A_EntityController extends a_concept_1.A_Component {
                 response.add('A_EntityController.load', 'Invalid ASEID');
                 return;
             }
-            console.log('Loading entity with ASEID:', request.params.aseid);
             const constructor = factory.resolve(request.params.aseid);
             if (constructor) {
                 const entity = new constructor(request.params.aseid);
@@ -166,7 +165,7 @@ __decorate([
         name: 'callEntity',
         invoke: false
     }),
-    A_Router_component_1.A_Router.Get({
+    A_Router_component_1.A_Router.Post({
         path: '/:aseid/:action',
         version: 'v1',
         prefix: 'a-entity'

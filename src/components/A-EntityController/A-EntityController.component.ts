@@ -36,8 +36,6 @@ export class A_EntityController extends A_Component {
             return;
         }
 
-        console.log('Loading entity with ASEID:', request.params.aseid);
-
         const constructor = factory.resolve(request.params.aseid);
 
         if (constructor) {
@@ -141,7 +139,7 @@ export class A_EntityController extends A_Component {
         name: 'callEntity',
         invoke: false
     })
-    @A_Router.Get({
+    @A_Router.Post({
         path: '/:aseid/:action',
         version: 'v1',
         prefix: 'a-entity'
