@@ -131,7 +131,11 @@ class A_Router extends a_concept_1.A_Component {
             const meta = a_concept_1.A_Context.meta(target);
             const routes = meta.get(A_Router_component_types_1.A_SERVER_TYPES__ARouterComponentMetaKey.ROUTES) || new Map();
             const searchKey = route.toAFeatureExtension(['A_Router', 'A_ServerContainer']);
-            routes.set(searchKey.source, route);
+            routes.set(searchKey.source, {
+                component: target,
+                handler: propertyKey,
+                route
+            });
             meta.set(A_Router_component_types_1.A_SERVER_TYPES__ARouterComponentMetaKey.ROUTES, routes);
             (0, a_concept_1.A_Feature_Define)({
                 name: searchKey.source,
@@ -175,7 +179,7 @@ class A_Router extends a_concept_1.A_Component {
                     if (routes) {
                         const currentRoute = routes.get(step.name || '');
                         if (currentRoute) {
-                            request.params = Object.assign(Object.assign({}, request.params), currentRoute.extractParams(url));
+                            request.params = Object.assign(Object.assign({}, request.params), currentRoute.route.extractParams(url));
                         }
                     }
                 }

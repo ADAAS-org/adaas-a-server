@@ -63,6 +63,7 @@ __exportStar(require("./src/context/A_ProxyConfig/A_ProxyConfig.types"), exports
 __exportStar(require("./src/entities/A-Request/A-Request.entity.types"), exports);
 __exportStar(require("./src/entities/A-Response/A-Response.entity.types"), exports);
 __exportStar(require("./src/components/A-ServerCORS/A_ServerCORS.component.types"), exports);
+__exportStar(require("./src/components/A-Router/A-Router.component.types"), exports);
 // export * from './src/entities/A-Route/A-Route.entity.types';
 // export * from './src/components/A-ServerLogger/A_ServerLogger.component.types';
 // export * from './src/components/A-EntityController/A-EntityController.component.types';

@@ -18,7 +18,8 @@ import {
     A_SERVER_TYPES__ARouterComponentMetaKey,
     A_SERVER_TYPES__ARouterRouteConfig,
     A_SERVER_TYPES__RouterMethod,
-    A_TYPES__ARouterComponentMeta
+    A_TYPES__ARouterComponentMeta,
+    A_TYPES__ARouterDefineRoute
 } from "./A-Router.component.types";
 import { A_Route } from "@adaas/a-server/entities/A-Route/A-Route.entity";
 import { A_Response } from "@adaas/a-server/entities/A-Response/A-Response.entity";
@@ -154,11 +155,15 @@ export class A_Router extends A_Component {
 
             const meta: A_Meta<A_TYPES__ARouterComponentMeta> = A_Context.meta<A_TYPES__ARouterComponentMeta>(target as any);
 
-            const routes = meta.get(A_SERVER_TYPES__ARouterComponentMetaKey.ROUTES) || new Map();
+            const routes = meta.get(A_SERVER_TYPES__ARouterComponentMetaKey.ROUTES) || new Map<string, A_TYPES__ARouterDefineRoute>();
 
             const searchKey = route.toAFeatureExtension(['A_Router', 'A_ServerContainer']);
 
-            routes.set(searchKey.source, route);
+            routes.set(searchKey.source, {
+                component: target,
+                handler: propertyKey,
+                route
+            });
 
             meta.set(A_SERVER_TYPES__ARouterComponentMetaKey.ROUTES, routes);
 
@@ -237,7 +242,7 @@ export class A_Router extends A_Component {
                     if (currentRoute) {
                         request.params = {
                             ...request.params,
-                            ...currentRoute.extractParams(url)
+                            ...currentRoute.route.extractParams(url)
                         };
                     }
                 }

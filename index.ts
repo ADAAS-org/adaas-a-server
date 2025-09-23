@@ -34,6 +34,7 @@ export * from './src/context/A_ProxyConfig/A_ProxyConfig.types';
 export * from './src/entities/A-Request/A-Request.entity.types';
 export * from './src/entities/A-Response/A-Response.entity.types';
 export * from './src/components/A-ServerCORS/A_ServerCORS.component.types';
+export * from "./src/components/A-Router/A-Router.component.types";
 
 
 // export * from './src/entities/A-Route/A-Route.entity.types';
