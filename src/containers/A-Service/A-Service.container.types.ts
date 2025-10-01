@@ -14,7 +14,9 @@ export enum A_SERVER_TYPES__ServerFeature {
     afterStart = 'afterStart',
     beforeStop = 'beforeStop',
     afterStop = 'afterStop',
+    beforeRequest = 'beforeRequest',
     onRequest = 'onRequest',
+    afterRequest = 'afterRequest',
 }
 
 

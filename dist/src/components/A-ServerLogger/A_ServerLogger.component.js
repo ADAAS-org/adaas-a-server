@@ -20,9 +20,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.A_ServerLogger = void 0;
 const a_concept_1 = require("@adaas/a-concept");
-const A_Server_container_types_1 = require("../../containers/A-Server/A-Server.container.types");
+const A_Service_container_types_1 = require("../../containers/A-Service/A-Service.container.types");
 const A_Server_context_1 = require("../../context/A-Server/A_Server.context");
-const A_Server_container_1 = require("../../containers/A-Server/A-Server.container");
+const A_Service_container_1 = require("../../containers/A-Service/A-Service.container");
 const A_Request_entity_1 = require("../../entities/A-Request/A-Request.entity");
 const A_Response_entity_1 = require("../../entities/A-Response/A-Response.entity");
 const A_Response_entity_types_1 = require("../../entities/A-Response/A-Response.entity.types");
@@ -153,15 +153,15 @@ __decorate([
 __decorate([
     a_concept_1.A_Feature.Define({ invoke: false }),
     a_concept_1.A_Feature.Extend({
-        name: A_Server_container_types_1.A_SERVER_TYPES__ServerFeature.afterStart,
-        scope: [A_Server_container_1.A_ServerContainer]
+        name: A_Service_container_types_1.A_SERVER_TYPES__ServerFeature.afterStart,
+        scope: [A_Service_container_1.A_Service]
     }),
     __param(0, (0, a_concept_1.A_Inject)(A_Server_context_1.A_Server))
 ], A_ServerLogger.prototype, "logStart", null);
 __decorate([
     a_concept_1.A_Feature.Extend({
-        name: A_Server_container_types_1.A_SERVER_TYPES__ServerFeature.afterStop,
-        scope: [A_Server_container_1.A_ServerContainer]
+        name: A_Service_container_types_1.A_SERVER_TYPES__ServerFeature.afterStop,
+        scope: [A_Service_container_1.A_Service]
     }),
     __param(0, (0, a_concept_1.A_Inject)(A_Server_context_1.A_Server))
 ], A_ServerLogger.prototype, "logStop", null);

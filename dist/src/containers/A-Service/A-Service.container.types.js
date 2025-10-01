@@ -7,7 +7,9 @@ var A_SERVER_TYPES__ServerFeature;
     A_SERVER_TYPES__ServerFeature["afterStart"] = "afterStart";
     A_SERVER_TYPES__ServerFeature["beforeStop"] = "beforeStop";
     A_SERVER_TYPES__ServerFeature["afterStop"] = "afterStop";
+    A_SERVER_TYPES__ServerFeature["beforeRequest"] = "beforeRequest";
     A_SERVER_TYPES__ServerFeature["onRequest"] = "onRequest";
+    A_SERVER_TYPES__ServerFeature["afterRequest"] = "afterRequest";
 })(A_SERVER_TYPES__ServerFeature || (exports.A_SERVER_TYPES__ServerFeature = A_SERVER_TYPES__ServerFeature = {}));
 var A_SERVER_TYPES__ServerMethod;
 (function (A_SERVER_TYPES__ServerMethod) {
@@ -22,4 +24,4 @@ var A_SERVER_TYPES__ServerMethod;
     A_SERVER_TYPES__ServerMethod["TRACE"] = "TRACE";
     A_SERVER_TYPES__ServerMethod["DEFAULT"] = "DEFAULT";
 })(A_SERVER_TYPES__ServerMethod || (exports.A_SERVER_TYPES__ServerMethod = A_SERVER_TYPES__ServerMethod = {}));
-//# sourceMappingURL=A-Server.container.types.js.map
+//# sourceMappingURL=A-Service.container.types.js.map

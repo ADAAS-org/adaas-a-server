@@ -12,10 +12,6 @@ export class A_EntityController extends A_Component {
     // =======================================================
     // ================ Method Definition=====================
     // =======================================================
-
-
-
-
     @A_Feature.Define({
         name: 'getEntity',
         invoke: false
@@ -45,8 +41,7 @@ export class A_EntityController extends A_Component {
 
             await entity.load();
 
-            response.add('entity', entity);
-            response.add('type', entity.entity);
+            return response.status(200).json(entity.toJSON());
         }
         else
             throw new Error('Entity is not available or invalid');

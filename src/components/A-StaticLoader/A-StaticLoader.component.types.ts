@@ -5,7 +5,7 @@ import path from "path";
 import { URL } from "url";
 import { A_Request } from "@adaas/a-server/entities/A-Request/A-Request.entity";
 import { A_Response } from "@adaas/a-server/entities/A-Response/A-Response.entity";
-import { A_SERVER_TYPES__ServerFeature } from "@adaas/a-server/containers/A-Server/A-Server.container.types";
+import { A_SERVER_TYPES__ServerFeature } from "@adaas/a-server/containers/A-Service/A-Service.container.types";
 import { A_Route } from "@adaas/a-server/entities/A-Route/A-Route.entity";
 
 

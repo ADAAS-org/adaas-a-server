@@ -22,6 +22,11 @@ export class A_EntityList<
     A_SERVER_TYPES__A_EntityListConstructor,
     A_SERVER_TYPES__A_EntityListSerialized
 > {
+
+    static get scope(): string {
+        return 'a-server';
+    }
+
     protected _entityConstructor!: new (...args: ConstructorParameters<typeof A_Entity>) => EntityType;
     protected _items: Array<EntityType> = [];
     protected _pagination: A_SERVER_TYPES__A_EntityListPagination = {

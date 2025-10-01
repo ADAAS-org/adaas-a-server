@@ -18,6 +18,9 @@ class A_EntityList extends a_concept_1.A_Entity {
             pageSize: 10
         };
     }
+    static get scope() {
+        return 'a-server';
+    }
     /**
      * Returns the entity constructor used for the list
      */

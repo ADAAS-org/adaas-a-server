@@ -112,8 +112,6 @@ export class A_Response<
         }
 
         try {
-
-
             switch (true) {
                 case !!data && typeof data === 'object':
                     return this.json(data);

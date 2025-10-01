@@ -11,8 +11,8 @@ import {
     A_Meta,
     A_Scope
 } from "@adaas/a-concept";
-import { A_ServerContainer } from "@adaas/a-server/containers/A-Server/A-Server.container";
-import { A_SERVER_TYPES__ServerFeature } from "@adaas/a-server/containers/A-Server/A-Server.container.types";
+import { A_Service } from "@adaas/a-server/containers/A-Service/A-Service.container";
+import { A_SERVER_TYPES__ServerFeature } from "@adaas/a-server/containers/A-Service/A-Service.container.types";
 import { A_Request } from "@adaas/a-server/entities/A-Request/A-Request.entity";
 import {
     A_SERVER_TYPES__ARouterComponentMetaKey,
@@ -157,7 +157,7 @@ export class A_Router extends A_Component {
 
             const routes = meta.get(A_SERVER_TYPES__ARouterComponentMetaKey.ROUTES) || new Map<string, A_TYPES__ARouterDefineRoute>();
 
-            const searchKey = route.toAFeatureExtension(['A_Router', 'A_ServerContainer']);
+            const searchKey = route.toAFeatureExtension(['A_Router', 'A_Service']);
 
             routes.set(searchKey.source, {
                 component: target,
@@ -198,7 +198,7 @@ export class A_Router extends A_Component {
     })
     @A_Feature.Extend({
         name: A_SERVER_TYPES__ServerFeature.onRequest,
-        scope: [A_ServerContainer],
+        scope: [A_Service],
     })
     async identifyRoute(
         @A_Inject(A_Request) request: A_Request,
@@ -208,10 +208,9 @@ export class A_Router extends A_Component {
         @A_Inject(A_Logger) logger: A_Logger
     ) {
 
-        const { method, url } = request;
-        const route = new A_Route(url, method);
+        const route = request.route;
 
-        if (config.get('DEV_MODE')) {
+        if (config.get('A_CONCEPT_ENVIRONMENT') === 'development') {
             logger.log(`Incoming request: ${request.method} ${request.url}`);
             logger.log(`Identified route: ${route.toString()}`);
         }
@@ -242,7 +241,7 @@ export class A_Router extends A_Component {
                     if (currentRoute) {
                         request.params = {
                             ...request.params,
-                            ...currentRoute.route.extractParams(url)
+                            ...currentRoute.route.extractParams(request.url)
                         };
                     }
                 }

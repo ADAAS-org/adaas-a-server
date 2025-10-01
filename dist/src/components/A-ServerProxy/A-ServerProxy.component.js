@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.A_ServerProxy = void 0;
 const a_concept_1 = require("@adaas/a-concept");
-const A_Server_container_types_1 = require("../../containers/A-Server/A-Server.container.types");
+const A_Service_container_types_1 = require("../../containers/A-Service/A-Service.container.types");
 const A_ProxyConfig_context_1 = require("../../context/A_ProxyConfig/A_ProxyConfig.context");
 const A_Request_entity_1 = require("../../entities/A-Request/A-Request.entity");
 const A_Response_entity_1 = require("../../entities/A-Response/A-Response.entity");
@@ -77,7 +77,7 @@ __decorate([
 ], A_ServerProxy.prototype, "load", null);
 __decorate([
     a_concept_1.A_Feature.Extend({
-        name: A_Server_container_types_1.A_SERVER_TYPES__ServerFeature.onRequest,
+        name: A_Service_container_types_1.A_SERVER_TYPES__ServerFeature.onRequest,
     }),
     __param(0, (0, a_concept_1.A_Inject)(A_Request_entity_1.A_Request)),
     __param(1, (0, a_concept_1.A_Inject)(A_Response_entity_1.A_Response)),

@@ -1,4 +1,4 @@
-import { A_ServerContainer } from "@adaas/a-server/containers/A-Server/A-Server.container"
+import { A_ServerContainer } from "@adaas/a-server/containers/A-Service/A-Service.container"
 import { A_Server } from "@adaas/a-server/context/A-Server/A_Server.context"
 import { User } from "./entities/User.entity";
 import { A_EntityFactory } from "@adaas/a-server/context/A-EntityFactory/A-EntityFactory.context";

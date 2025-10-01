@@ -1,6 +1,6 @@
 import { A_Component, A_Entity, A_Feature, A_Inject, A_Scope, A_TYPES__EntityBaseMethod } from "@adaas/a-concept";
-import { A_ServerContainer } from "@adaas/a-server/containers/A-Server/A-Server.container";
-import { A_SERVER_TYPES__ServerFeature } from "@adaas/a-server/containers/A-Server/A-Server.container.types";
+import { A_ServerContainer } from "@adaas/a-server/containers/A-Service/A-Service.container";
+import { A_SERVER_TYPES__ServerFeature } from "@adaas/a-server/containers/A-Service/A-Service.container.types";
 import { MemoryStore } from "examples/microservices-server/context/MemoryStore.context";
 
 

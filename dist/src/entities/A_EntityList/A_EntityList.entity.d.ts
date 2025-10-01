@@ -6,6 +6,7 @@ import { A_SERVER_TYPES__A_EntityListConstructor, A_SERVER_TYPES__A_EntityListPa
  * Entity that represents a list of entities with pagination of particular type
  */
 export declare class A_EntityList<EntityType extends A_Entity = A_Entity> extends A_Entity<A_SERVER_TYPES__A_EntityListConstructor, A_SERVER_TYPES__A_EntityListSerialized> {
+    static get scope(): string;
     protected _entityConstructor: new (...args: ConstructorParameters<typeof A_Entity>) => EntityType;
     protected _items: Array<EntityType>;
     protected _pagination: A_SERVER_TYPES__A_EntityListPagination;

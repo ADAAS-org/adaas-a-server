@@ -53,7 +53,7 @@ class A_ServerHealthMonitor extends a_concept_1.A_Component {
     get(config, request, response, logger) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
-            const packageJSON = yield Promise.resolve(`${`${config.get('CONCEPT_ROOT_FOLDER')}/package.json`}`).then(s => __importStar(require(s)));
+            const packageJSON = yield Promise.resolve(`${`${config.get('A_CONCEPT_ROOT_FOLDER')}/package.json`}`).then(s => __importStar(require(s)));
             const exposedProperties = ((_a = config.get('EXPOSED_PROPERTIES')) === null || _a === void 0 ? void 0 : _a.split(',')) || [
                 'name',
                 'version',

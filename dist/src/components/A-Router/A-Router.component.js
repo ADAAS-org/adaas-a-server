@@ -20,8 +20,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.A_Router = void 0;
 const a_concept_1 = require("@adaas/a-concept");
-const A_Server_container_1 = require("../../containers/A-Server/A-Server.container");
-const A_Server_container_types_1 = require("../../containers/A-Server/A-Server.container.types");
+const A_Service_container_1 = require("../../containers/A-Service/A-Service.container");
+const A_Service_container_types_1 = require("../../containers/A-Service/A-Service.container.types");
 const A_Request_entity_1 = require("../../entities/A-Request/A-Request.entity");
 const A_Router_component_types_1 = require("./A-Router.component.types");
 const A_Route_entity_1 = require("../../entities/A-Route/A-Route.entity");
@@ -130,7 +130,7 @@ class A_Router extends a_concept_1.A_Component {
         return function decorator(target, propertyKey, descriptor) {
             const meta = a_concept_1.A_Context.meta(target);
             const routes = meta.get(A_Router_component_types_1.A_SERVER_TYPES__ARouterComponentMetaKey.ROUTES) || new Map();
-            const searchKey = route.toAFeatureExtension(['A_Router', 'A_ServerContainer']);
+            const searchKey = route.toAFeatureExtension(['A_Router', 'A_Service']);
             routes.set(searchKey.source, {
                 component: target,
                 handler: propertyKey,
@@ -157,9 +157,8 @@ class A_Router extends a_concept_1.A_Component {
     // =======================================================
     identifyRoute(request, response, scope, config, logger) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { method, url } = request;
-            const route = new A_Route_entity_1.A_Route(url, method);
-            if (config.get('DEV_MODE')) {
+            const route = request.route;
+            if (config.get('A_CONCEPT_ENVIRONMENT') === 'development') {
                 logger.log(`Incoming request: ${request.method} ${request.url}`);
                 logger.log(`Identified route: ${route.toString()}`);
             }
@@ -179,7 +178,7 @@ class A_Router extends a_concept_1.A_Component {
                     if (routes) {
                         const currentRoute = routes.get(step.name || '');
                         if (currentRoute) {
-                            request.params = Object.assign(Object.assign({}, request.params), currentRoute.route.extractParams(url));
+                            request.params = Object.assign(Object.assign({}, request.params), currentRoute.route.extractParams(request.url));
                         }
                     }
                 }
@@ -203,8 +202,8 @@ __decorate([
         invoke: false
     }),
     a_concept_1.A_Feature.Extend({
-        name: A_Server_container_types_1.A_SERVER_TYPES__ServerFeature.onRequest,
-        scope: [A_Server_container_1.A_ServerContainer],
+        name: A_Service_container_types_1.A_SERVER_TYPES__ServerFeature.onRequest,
+        scope: [A_Service_container_1.A_Service],
     }),
     __param(0, (0, a_concept_1.A_Inject)(A_Request_entity_1.A_Request)),
     __param(1, (0, a_concept_1.A_Inject)(A_Response_entity_1.A_Response)),

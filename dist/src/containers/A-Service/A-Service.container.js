@@ -18,15 +18,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.A_ServerContainer = void 0;
+exports.A_Service = void 0;
 const a_concept_1 = require("@adaas/a-concept");
 const http_1 = require("http");
-const A_Server_container_types_1 = require("./A-Server.container.types");
+const A_Service_container_types_1 = require("./A-Service.container.types");
 const A_Server_context_1 = require("../../context/A-Server/A_Server.context");
 const A_Request_entity_1 = require("../../entities/A-Request/A-Request.entity");
 const A_Response_entity_1 = require("../../entities/A-Response/A-Response.entity");
 const crypto_1 = __importDefault(require("crypto"));
-class A_ServerContainer extends a_concept_1.A_Container {
+const env_constants_1 = require("../../constants/env.constants");
+/**
+ * A-Service is a container that can run different types of services, such as HTTP servers, workers, etc.
+ * Depending on the provided config and configuration, it will load the necessary components and start the service.
+ *
+ */
+class A_Service extends a_concept_1.A_Container {
     constructor() {
         super(...arguments);
         this.port = 3000;
@@ -37,20 +43,27 @@ class A_ServerContainer extends a_concept_1.A_Container {
                 const errorsRegistry = new a_concept_1.A_Errors({});
                 this.Scope.register(errorsRegistry);
             }
-            if (!this.Scope.has(a_concept_1.A_Config)) {
+            let config;
+            let aServer;
+            if (!this.Scope.has((a_concept_1.A_Config))) {
                 const config = new a_concept_1.A_Config({
-                    variables: ['DEV_MODE', 'CONFIG_VERBOSE', 'PORT'],
+                    variables: [...Array.from(env_constants_1.A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES_ARRAY)],
                     defaults: {
-                        DEV_MODE: true,
-                        CONFIG_VERBOSE: true,
-                        PORT: 3000
+                        A_SERVER_PORT: 3000
                     }
                 });
                 this.Scope.register(config);
             }
-            const config = this.Scope.resolve(a_concept_1.A_Config);
+            config = this.Scope.resolve(a_concept_1.A_Config);
+            if (!this.Scope.has(A_Server_context_1.A_Server)) {
+                aServer = new A_Server_context_1.A_Server({
+                    port: config.get('A_SERVER_PORT'),
+                    name: this.name,
+                    version: 'v1'
+                });
+            }
             // Set the server to listen on port 3000
-            const port = config.get('PORT') || 3000;
+            const port = config.get('A_SERVER_PORT');
             // Create the HTTP server
             this.server = (0, http_1.createServer)(this.onRequest.bind(this));
             const newServer = new A_Server_context_1.A_Server({
@@ -59,9 +72,6 @@ class A_ServerContainer extends a_concept_1.A_Container {
                 version: 'v1'
             });
             this.Scope.register(newServer);
-            // } else {
-            //     this.server = existedServer;
-            // }
         });
     }
     listen() {
@@ -93,9 +103,9 @@ class A_ServerContainer extends a_concept_1.A_Container {
     }
     stop() {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.call(A_Server_container_types_1.A_SERVER_TYPES__ServerFeature.beforeStop);
+            yield this.call(A_Service_container_types_1.A_SERVER_TYPES__ServerFeature.beforeStop);
             yield this.server.close();
-            yield this.call(A_Server_container_types_1.A_SERVER_TYPES__ServerFeature.afterStop);
+            yield this.call(A_Service_container_types_1.A_SERVER_TYPES__ServerFeature.afterStop);
         });
     }
     onRequest(request, response) {
@@ -107,7 +117,9 @@ class A_ServerContainer extends a_concept_1.A_Container {
                     name: `a-server-request::${Date.now()}`,
                     entities: [req, res],
                 });
-                yield this.call(A_Server_container_types_1.A_SERVER_TYPES__ServerFeature.onRequest, scope);
+                yield this.call(A_Service_container_types_1.A_SERVER_TYPES__ServerFeature.beforeRequest, scope);
+                yield this.call(A_Service_container_types_1.A_SERVER_TYPES__ServerFeature.onRequest, scope);
+                yield this.call(A_Service_container_types_1.A_SERVER_TYPES__ServerFeature.afterRequest, scope);
                 yield res.status(200).send();
             }
             catch (error) {
@@ -142,41 +154,41 @@ class A_ServerContainer extends a_concept_1.A_Container {
         return __awaiter(this, void 0, void 0, function* () { });
     }
 }
-exports.A_ServerContainer = A_ServerContainer;
+exports.A_Service = A_Service;
 __decorate([
     a_concept_1.A_Concept.Load()
-], A_ServerContainer.prototype, "load", null);
+], A_Service.prototype, "load", null);
 __decorate([
     a_concept_1.A_Concept.Start()
     /**
      * Start the server
      */
-], A_ServerContainer.prototype, "start", null);
+], A_Service.prototype, "start", null);
 __decorate([
     a_concept_1.A_Feature.Define({ invoke: true })
-], A_ServerContainer.prototype, "beforeStart", null);
+], A_Service.prototype, "beforeStart", null);
 __decorate([
     a_concept_1.A_Feature.Define({ invoke: true })
-], A_ServerContainer.prototype, "afterStart", null);
+], A_Service.prototype, "afterStart", null);
 __decorate([
     a_concept_1.A_Concept.Stop()
     /**
-     * Stop the server
+     * Stop service
      */
-], A_ServerContainer.prototype, "stop", null);
+], A_Service.prototype, "stop", null);
 __decorate([
     a_concept_1.A_Feature.Define({
-        name: A_Server_container_types_1.A_SERVER_TYPES__ServerFeature.onRequest,
+        name: A_Service_container_types_1.A_SERVER_TYPES__ServerFeature.onRequest,
         invoke: false
     })
     /**
      * Handle incoming requests
      */
-], A_ServerContainer.prototype, "onRequest", null);
+], A_Service.prototype, "onRequest", null);
 __decorate([
     a_concept_1.A_Feature.Define({ invoke: true })
-], A_ServerContainer.prototype, "beforeStop", null);
+], A_Service.prototype, "beforeStop", null);
 __decorate([
     a_concept_1.A_Feature.Define({ invoke: true })
-], A_ServerContainer.prototype, "afterStop", null);
-//# sourceMappingURL=A-Server.container.js.map
+], A_Service.prototype, "afterStop", null);
+//# sourceMappingURL=A-Service.container.js.map

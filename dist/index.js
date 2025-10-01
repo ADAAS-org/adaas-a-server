@@ -14,11 +14,11 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.A_ListingController = exports.A_Controller = exports.A_StaticLoader = exports.A_ServerCORS = exports.A_ServerProxy = exports.A_ServerHealthMonitor = exports.A_Router = exports.A_EntityController = exports.A_ServerLogger = exports.A_EntityList = exports.A_Route = exports.A_Response = exports.A_Request = exports.A_ListQueryFilter = exports.A_StaticConfig = exports.A_ProxyConfig = exports.A_Server = exports.A_ServerContainer = void 0;
+exports.A_ListingController = exports.A_Controller = exports.A_StaticLoader = exports.A_ServerCORS = exports.A_ServerProxy = exports.A_ServerHealthMonitor = exports.A_Router = exports.A_EntityController = exports.A_ServerLogger = exports.A_EntityList = exports.A_Route = exports.A_Response = exports.A_Request = exports.A_ListQueryFilter = exports.A_StaticConfig = exports.A_ProxyConfig = exports.A_Server = exports.A_Service = void 0;
 // ================================================================
 //  Containers Export
-var A_Server_container_1 = require("./src/containers/A-Server/A-Server.container");
-Object.defineProperty(exports, "A_ServerContainer", { enumerable: true, get: function () { return A_Server_container_1.A_ServerContainer; } });
+var A_Service_container_1 = require("./src/containers/A-Service/A-Service.container");
+Object.defineProperty(exports, "A_Service", { enumerable: true, get: function () { return A_Service_container_1.A_Service; } });
 //  Contexts Export
 var A_Server_context_1 = require("./src/context/A-Server/A_Server.context");
 Object.defineProperty(exports, "A_Server", { enumerable: true, get: function () { return A_Server_context_1.A_Server; } });
@@ -52,13 +52,13 @@ var A_ServerCORS_component_1 = require("./src/components/A-ServerCORS/A_ServerCO
 Object.defineProperty(exports, "A_ServerCORS", { enumerable: true, get: function () { return A_ServerCORS_component_1.A_ServerCORS; } });
 var A_StaticLoader_component_1 = require("./src/components/A-StaticLoader/A-StaticLoader.component");
 Object.defineProperty(exports, "A_StaticLoader", { enumerable: true, get: function () { return A_StaticLoader_component_1.A_StaticLoader; } });
-var A_Controller_component_1 = require("./src/components/A_Controller/A_Controller.component");
+var A_Controller_component_1 = require("./src/components/A-Controller/A-Controller.component");
 Object.defineProperty(exports, "A_Controller", { enumerable: true, get: function () { return A_Controller_component_1.A_Controller; } });
 var A_ListingController_component_1 = require("./src/components/A-ListingController/A-ListingController.component");
 Object.defineProperty(exports, "A_ListingController", { enumerable: true, get: function () { return A_ListingController_component_1.A_ListingController; } });
 //  Types Export
-__exportStar(require("./src/containers/A-Server/A-Server.container.types"), exports);
-__exportStar(require("./src/containers/A-Server/A-Server.container.types"), exports);
+__exportStar(require("./src/containers/A-Service/A-Service.container.types"), exports);
+__exportStar(require("./src/containers/A-Service/A-Service.container.types"), exports);
 __exportStar(require("./src/context/A_ProxyConfig/A_ProxyConfig.types"), exports);
 __exportStar(require("./src/entities/A-Request/A-Request.entity.types"), exports);
 __exportStar(require("./src/entities/A-Response/A-Response.entity.types"), exports);

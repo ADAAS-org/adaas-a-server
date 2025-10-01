@@ -2,7 +2,12 @@ import { A_Container } from "@adaas/a-concept";
 import { IncomingMessage, ServerResponse } from "http";
 import { A_Request } from "../../entities/A-Request/A-Request.entity";
 import { A_Response } from "../../entities/A-Response/A-Response.entity";
-export declare class A_ServerContainer extends A_Container {
+/**
+ * A-Service is a container that can run different types of services, such as HTTP servers, workers, etc.
+ * Depending on the provided config and configuration, it will load the necessary components and start the service.
+ *
+ */
+export declare class A_Service extends A_Container {
     private server;
     private port;
     load(): Promise<void>;

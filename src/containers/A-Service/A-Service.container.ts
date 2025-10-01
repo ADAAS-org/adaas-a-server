@@ -1,15 +1,21 @@
 import { A_Concept, A_Config, A_Container, A_Context, A_Errors, A_Feature, A_Inject, A_Logger, A_Scope, A_TYPES__ComponentMetaKey, } from "@adaas/a-concept";
 import { createServer, IncomingMessage, Server, ServerResponse } from "http";
-import { A_SERVER_TYPES__ServerFeature, A_SERVER_TYPES__ServerFeatures } from "./A-Server.container.types";
+import { A_SERVER_TYPES__ServerFeature, A_SERVER_TYPES__ServerFeatures } from "./A-Service.container.types";
 import { A_Server } from "@adaas/a-server/context/A-Server/A_Server.context";
 import { A_Request } from "@adaas/a-server/entities/A-Request/A-Request.entity";
 import { A_Response } from "@adaas/a-server/entities/A-Response/A-Response.entity";
 import crypto from 'crypto';
+import { A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES_ARRAY, A_TYPES__ServerENVVariables } from "@adaas/a-server/constants/env.constants";
 
 
 
 
-export class A_ServerContainer extends A_Container {
+/**
+ * A-Service is a container that can run different types of services, such as HTTP servers, workers, etc.
+ * Depending on the provided config and configuration, it will load the necessary components and start the service.
+ * 
+ */
+export class A_Service extends A_Container {
 
     private server!: Server;
     private port: number = 3000;
@@ -22,25 +28,35 @@ export class A_ServerContainer extends A_Container {
             this.Scope.register(errorsRegistry);
         }
 
+        let config: A_Config<A_TYPES__ServerENVVariables>;
+        let aServer: A_Server;
 
-
-        if (!this.Scope.has(A_Config)) {
-            const config = new A_Config({
-                variables: ['DEV_MODE', 'CONFIG_VERBOSE', 'PORT'],
+        if (!this.Scope.has(A_Config<A_TYPES__ServerENVVariables>)) {
+            const config = new A_Config<A_TYPES__ServerENVVariables>({
+                variables: [...Array.from(A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES_ARRAY)],
                 defaults: {
-                    DEV_MODE: true,
-                    CONFIG_VERBOSE: true,
-                    PORT: 3000
+                    A_SERVER_PORT: 3000
                 }
             });
 
             this.Scope.register(config);
         }
 
-        const config = this.Scope.resolve(A_Config);
+        config = this.Scope.resolve(A_Config) as A_Config<A_TYPES__ServerENVVariables>;
+
+
+        if (!this.Scope.has(A_Server)) {
+            aServer = new A_Server({
+                port: config.get('A_SERVER_PORT'),
+                name: this.name,
+                version: 'v1'
+            });
+        }
+
+
 
         // Set the server to listen on port 3000
-        const port = config.get('PORT') || 3000;
+        const port = config.get('A_SERVER_PORT');
 
         // Create the HTTP server
         this.server = createServer(this.onRequest.bind(this));
@@ -52,14 +68,6 @@ export class A_ServerContainer extends A_Container {
         });
 
         this.Scope.register(newServer);
-
-
-
-
-
-        // } else {
-        //     this.server = existedServer;
-        // }
     }
 
     protected listen(): Promise<void> {
@@ -102,7 +110,7 @@ export class A_ServerContainer extends A_Container {
 
     @A_Concept.Stop()
     /**
-     * Stop the server
+     * Stop service 
      */
     async stop() {
         await this.call(A_SERVER_TYPES__ServerFeature.beforeStop);
@@ -134,11 +142,14 @@ export class A_ServerContainer extends A_Container {
                 entities: [req, res],
             });
 
+            await this.call(A_SERVER_TYPES__ServerFeature.beforeRequest, scope);
             await this.call(A_SERVER_TYPES__ServerFeature.onRequest, scope);
+            await this.call(A_SERVER_TYPES__ServerFeature.afterRequest, scope);
 
             await res.status(200).send();
 
         } catch (error) {
+
             return res.failed(error);
         }
     }

@@ -28,7 +28,7 @@ const path_1 = __importDefault(require("path"));
 const url_1 = require("url");
 const A_Request_entity_1 = require("../../entities/A-Request/A-Request.entity");
 const A_Response_entity_1 = require("../../entities/A-Response/A-Response.entity");
-const A_Server_container_types_1 = require("../../containers/A-Server/A-Server.container.types");
+const A_Service_container_types_1 = require("../../containers/A-Service/A-Service.container.types");
 const A_Route_entity_1 = require("../../entities/A-Route/A-Route.entity");
 const A_StaticConfig_context_1 = require("../../context/A-StaticConfig/A-StaticConfig.context");
 class A_StaticLoader extends a_concept_1.A_Component {
@@ -115,7 +115,7 @@ __decorate([
 ], A_StaticLoader.prototype, "load", null);
 __decorate([
     a_concept_1.A_Feature.Extend({
-        name: A_Server_container_types_1.A_SERVER_TYPES__ServerFeature.onRequest,
+        name: A_Service_container_types_1.A_SERVER_TYPES__ServerFeature.onRequest,
     }),
     __param(0, (0, a_concept_1.A_Inject)(A_Request_entity_1.A_Request)),
     __param(1, (0, a_concept_1.A_Inject)(A_Response_entity_1.A_Response)),

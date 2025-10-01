@@ -24,7 +24,7 @@ export class A_ListingController extends A_Component {
         @A_Inject(A_Response) response: A_Response,
         @A_Inject(A_EntityFactory) factory: A_EntityFactory,
         @A_Inject(A_Scope) scope: A_Scope,
-        @A_Inject(A_Config) config: A_Config<'A_LIST_ITEMS_PER_PAGE' | 'A_LIST_PAGE'>
+        @A_Inject(A_Config) config: A_Config<['A_LIST_ITEMS_PER_PAGE', 'A_LIST_PAGE']>
     ) {
 
         const constructor = factory.resolveByName(request.params.type);

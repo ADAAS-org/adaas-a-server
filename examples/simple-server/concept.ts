@@ -1,6 +1,6 @@
 import { A_EntityController } from "@adaas/a-server/components/A-EntityController/A-EntityController.component"
 import { A_Router } from "@adaas/a-server/components/A-Router/A-Router.component"
-import { A_ServerContainer } from "@adaas/a-server/containers/A-Server/A-Server.container"
+import { A_Service } from "@adaas/a-server/containers/A-Service/A-Service.container"
 import { A_EntityFactory } from "@adaas/a-server/context/A-EntityFactory/A-EntityFactory.context"
 import { User } from "./entities/User/User.entity"
 import { A_ServerLogger } from "@adaas/a-server/components/A-ServerLogger/A_ServerLogger.component"
@@ -22,8 +22,10 @@ import { A_ServerCORS } from "@adaas/a-server/components/A-ServerCORS/A_ServerCO
 import { A_StaticLoader } from "@adaas/a-server/components/A-StaticLoader/A-StaticLoader.component"
 import { A_StaticConfig } from "@adaas/a-server/context/A-StaticConfig/A-StaticConfig.context"
 import { UserDoingComponent } from "./components/UserDoing.component"
-import { A_Controller } from "@adaas/a-server/components/A_Controller/A_Controller.component"
+import { A_Controller } from "@adaas/a-server/components/A-Controller/A-Controller.component"
 import { A_ListingController } from "@adaas/a-server/components/A-ListingController/A-ListingController.component"
+import { A_CommandController } from "@adaas/a-server/components/A-CommandController/A-CommandController.component"
+import { SignInCommand } from "./commands/SignIn.command"
 
 
 
@@ -48,8 +50,7 @@ import { A_ListingController } from "@adaas/a-server/components/A-ListingControl
     });
 
 
-    const Server = new A_ServerContainer({
-        name: 'simple-server2',
+    const Server = new A_Service({
         components: [
             A_ErrorsManager,
             A_ServerLogger,
@@ -63,7 +64,11 @@ import { A_ListingController } from "@adaas/a-server/components/A-ListingControl
             A_StaticLoader,
             A_Controller,
             A_ServerCORS,
-            A_ListingController
+            A_ListingController,
+            A_CommandController
+        ],
+        commands: [
+            SignInCommand
         ],
         fragments: [
             config,

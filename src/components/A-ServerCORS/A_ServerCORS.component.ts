@@ -1,7 +1,7 @@
 import { A_Component, A_Config, A_Feature, A_Inject } from '@adaas/a-concept';
 import { A_SERVER_TYPES__CorsConfig } from './A_ServerCORS.component.types';
 import { A_SERVER_DEFAULTS__CorsConfig } from './A_ServerCORS.component.defaults';
-import { A_SERVER_TYPES__ServerFeature } from '@adaas/a-server/containers/A-Server/A-Server.container.types';
+import { A_SERVER_TYPES__ServerFeature } from '@adaas/a-server/containers/A-Service/A-Service.container.types';
 import { A_Request } from '@adaas/a-server/entities/A-Request/A-Request.entity';
 import { A_Response } from '@adaas/a-server/entities/A-Response/A-Response.entity';
 
@@ -14,7 +14,7 @@ export class A_ServerCORS extends A_Component {
         name: A_SERVER_TYPES__ServerFeature.beforeStart
     })
     async init(
-        @A_Inject(A_Config) config: A_Config<'ORIGIN' | 'METHODS' | 'HEADERS' | 'CREDENTIALS' | 'MAX_AGE'>,
+        @A_Inject(A_Config) config: A_Config<['ORIGIN', 'METHODS', 'HEADERS', 'CREDENTIALS', 'MAX_AGE']>,
     ) {
         this.config = {
             origin: config.get('ORIGIN') || A_SERVER_DEFAULTS__CorsConfig.origin,
@@ -27,7 +27,7 @@ export class A_ServerCORS extends A_Component {
 
 
     @A_Feature.Extend({
-        name: A_SERVER_TYPES__ServerFeature.onRequest
+        name: A_SERVER_TYPES__ServerFeature.beforeRequest
     })
     public apply(
         @A_Inject(A_Request) aReq: A_Request,

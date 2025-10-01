@@ -11,7 +11,9 @@ export declare enum A_SERVER_TYPES__ServerFeature {
     afterStart = "afterStart",
     beforeStop = "beforeStop",
     afterStop = "afterStop",
-    onRequest = "onRequest"
+    beforeRequest = "beforeRequest",
+    onRequest = "onRequest",
+    afterRequest = "afterRequest"
 }
 export type A_SERVER_TYPES__ServerConstructor = {
     name: string;

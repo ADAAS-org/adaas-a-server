@@ -1,25 +1,19 @@
 import { A_Config, A_Feature, A_Inject, A_Logger, A_Scope } from "@adaas/a-concept";
-import { A_SERVER_TYPES__ServerFeature } from "@adaas/a-server/containers/A-Server/A-Server.container.types";
+import { A_SERVER_TYPES__ServerFeature } from "@adaas/a-server/containers/A-Service/A-Service.container.types";
 import { A_Server } from "@adaas/a-server/context/A-Server/A_Server.context";
-import { A_SERVER_TYPES__ServerLoggerRouteParams } from "./A_ServerLogger.component.types";
-import { A_ServerContainer } from "@adaas/a-server/containers/A-Server/A-Server.container";
+import { A_SERVER_TYPES__ServerLoggerEnvVariables, A_SERVER_TYPES__ServerLoggerRouteParams } from "./A_ServerLogger.component.types";
+import { A_Service } from "@adaas/a-server/containers/A-Service/A-Service.container";
 import { A_Request } from "@adaas/a-server/entities/A-Request/A-Request.entity";
 import { A_Response } from "@adaas/a-server/entities/A-Response/A-Response.entity";
 import { A_SERVER_TYPES__ResponseEvent } from "@adaas/a-server/entities/A-Response/A-Response.entity.types";
 import { A_Route } from "@adaas/a-server/entities/A-Route/A-Route.entity";
 import { A_SERVER_TYPES__RequestEvent } from "@adaas/a-server/entities/A-Request/A-Request.entity.types";
+import { A_TYPES__ConceptENVVariables } from "@adaas/a-concept/dist/src/constants/env.constants";
 
 
 export class A_ServerLogger extends A_Logger {
 
-    protected config!: A_Config<
-        'DEV_MODE'
-        | 'SERVER_IGNORE_LOG_200'
-        | 'SERVER_IGNORE_LOG_404'
-        | 'SERVER_IGNORE_LOG_500'
-        | 'SERVER_IGNORE_LOG_400'
-        | 'SERVER_IGNORE_LOG_DEFAULT'
-    >
+    protected config!: A_Config<A_SERVER_TYPES__ServerLoggerEnvVariables>
 
 
 
@@ -53,7 +47,7 @@ export class A_ServerLogger extends A_Logger {
     @A_Feature.Define({ invoke: false })
     @A_Feature.Extend({
         name: A_SERVER_TYPES__ServerFeature.afterStart,
-        scope: [A_ServerContainer]
+        scope: [A_Service]
     })
     logStart(
         @A_Inject(A_Server) server: A_Server,
@@ -72,7 +66,7 @@ export class A_ServerLogger extends A_Logger {
 
     @A_Feature.Extend({
         name: A_SERVER_TYPES__ServerFeature.afterStop,
-        scope: [A_ServerContainer]
+        scope: [A_Service]
     })
     logStop(
         @A_Inject(A_Server) server: A_Server,

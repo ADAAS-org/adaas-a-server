@@ -18,47 +18,36 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.A_Controller = void 0;
+exports.A_CommandController = void 0;
 const a_concept_1 = require("@adaas/a-concept");
 const A_Router_component_1 = require("../A-Router/A-Router.component");
-const A_Response_entity_1 = require("../../entities/A-Response/A-Response.entity");
 const A_Request_entity_1 = require("../../entities/A-Request/A-Request.entity");
-class A_Controller extends a_concept_1.A_Component {
-    callEntityMethod(request, response, scope) {
+const A_Response_entity_1 = require("../../entities/A-Response/A-Response.entity");
+class A_CommandController extends a_concept_1.A_Component {
+    handleCommand(req, res, scope) {
         return __awaiter(this, void 0, void 0, function* () {
-            //  check step by step each parameter to ensure they are valid
-            if (!scope.has(request.params.component))
-                return;
-            if (!request.params.operation || typeof request.params.operation !== 'string')
-                return;
-            const possibleComponent = scope.resolve(request.params.component);
-            if (!possibleComponent
-                ||
-                    ![a_concept_1.A_Component, a_concept_1.A_Container]
-                        .some(c => possibleComponent instanceof c))
-                return;
-            const component = possibleComponent;
-            const meta = a_concept_1.A_Context.meta(component);
-            const targetFeature = meta.features().find(f => f.name === `${component.constructor.name}.${request.params.operation}`);
-            if (!targetFeature)
-                return;
-            yield component.call(request.params.operation, scope);
+            const commandName = req.params.command;
+            const CommandConstructor = scope.resolveConstructor(commandName);
+            if (!CommandConstructor) {
+                res.status(404);
+                throw new Error(`Command ${commandName} not found`);
+            }
+            const command = new CommandConstructor(req.body);
+            yield command.execute();
+            const serialized = command.toJSON();
+            return res.status(200).json(serialized);
         });
     }
 }
-exports.A_Controller = A_Controller;
+exports.A_CommandController = A_CommandController;
 __decorate([
-    a_concept_1.A_Feature.Define({
-        name: 'callEntityMethod',
-        invoke: false,
-    }),
-    A_Router_component_1.A_Router.Post({
-        path: '/:component/:operation',
-        version: 'v1',
-        prefix: 'a-component'
+    A_Router_component_1.A_Router.Get({
+        path: "/:command/execute",
+        version: "v1",
+        prefix: "a-command"
     }),
     __param(0, (0, a_concept_1.A_Inject)(A_Request_entity_1.A_Request)),
     __param(1, (0, a_concept_1.A_Inject)(A_Response_entity_1.A_Response)),
     __param(2, (0, a_concept_1.A_Inject)(a_concept_1.A_Scope))
-], A_Controller.prototype, "callEntityMethod", null);
-//# sourceMappingURL=A_Controller.component.js.map
+], A_CommandController.prototype, "handleCommand", null);
+//# sourceMappingURL=A-CommandController.component.js.map

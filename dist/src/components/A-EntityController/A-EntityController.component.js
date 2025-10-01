@@ -40,8 +40,7 @@ class A_EntityController extends a_concept_1.A_Component {
                 const entity = new constructor(request.params.aseid);
                 scope.register(entity);
                 yield entity.load();
-                response.add('entity', entity);
-                response.add('type', entity.entity);
+                return response.status(200).json(entity.toJSON());
             }
             else
                 throw new Error('Entity is not available or invalid');
