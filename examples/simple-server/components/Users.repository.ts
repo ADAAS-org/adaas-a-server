@@ -1,8 +1,11 @@
-import { A_Component, A_Entity, A_Feature, A_Inject, A_Logger, A_Scope, A_TYPES__EntityBaseMethod } from "@adaas/a-concept";
+import { A_Component, A_Entity, A_Feature, A_Inject,  A_Scope,  } from "@adaas/a-concept";
 import { User } from "../entities/User/User.entity";
 import { UserJSON } from "../entities/User/User.entity.types";
 import { A_EntityList } from "@adaas/a-server/entities/A_EntityList/A_EntityList.entity";
-import { A_ListQueryFilter } from "@adaas/a-server/context/A_ListQueryFilter/A_ListQueryFilter.context";
+import { A_ListQueryFilter } from "@adaas/a-server/context/A-ListQueryFilter/A_ListQueryFilter.context";
+import { A_Command, A_Logger } from "@adaas/a-utils";
+import { A_TYPES__EntityFeatures } from "@adaas/a-concept/dist/src/global/A-Entity/A-Entity.constants";
+import { SignInCommand } from "../commands/SignIn.command";
 
 
 export class UsersRepository extends A_Component {
@@ -22,9 +25,9 @@ export class UsersRepository extends A_Component {
 
 
     @A_Feature.Extend({
-        name: A_TYPES__EntityBaseMethod.LOAD,
+        name: 'load',
         scope: {
-            exclude: [A_EntityList]
+            exclude: [A_EntityList, A_Command, SignInCommand]
         }
     })
     load(
@@ -44,7 +47,7 @@ export class UsersRepository extends A_Component {
 
 
     @A_Feature.Extend({
-        name: 'load',
+        name: A_TYPES__EntityFeatures.LOAD,
         scope: [A_EntityList]
     })
     list(
@@ -76,7 +79,7 @@ export class UsersRepository extends A_Component {
 
 
     @A_Feature.Extend({
-        name: A_TYPES__EntityBaseMethod.SAVE
+        name: A_TYPES__EntityFeatures.SAVE
     })
     create(
         @A_Inject(User) user: User
@@ -87,7 +90,7 @@ export class UsersRepository extends A_Component {
 
 
     @A_Feature.Extend({
-        name: A_TYPES__EntityBaseMethod.DESTROY
+        name: A_TYPES__EntityFeatures.DESTROY
     })
     delete(
         @A_Inject(User) user: User

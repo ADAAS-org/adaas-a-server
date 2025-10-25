@@ -1,13 +1,12 @@
 import {
     A_Context, A_Entity,
-    A_TYPES__Entity_JSON
+    ASEID,
 } from "@adaas/a-concept";
 import {
     A_SERVER_TYPES__A_EntityListConstructor,
     A_SERVER_TYPES__A_EntityListPagination,
     A_SERVER_TYPES__A_EntityListSerialized
 } from "./A_EntityList.entity.types";
-import { ASEID } from "@adaas/a-utils";
 
 
 
@@ -67,7 +66,7 @@ export class A_EntityList<
      */
     fromNew(newEntity: A_SERVER_TYPES__A_EntityListConstructor): void {
         this.aseid = new ASEID({
-            namespace: A_Context.root.name,
+            concept: A_Context.root.name,
             scope: 'default',
             entity: 'a-list' + (newEntity.name ? `.${newEntity.name}` : ''),
             id: (new Date()).getTime().toString(),

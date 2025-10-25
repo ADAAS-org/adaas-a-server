@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.A_EntityFactory = void 0;
 const a_concept_1 = require("@adaas/a-concept");
-const a_utils_1 = require("@adaas/a-utils");
 class A_EntityFactory extends a_concept_1.A_Fragment {
     constructor(param1, param2) {
         super();
@@ -35,11 +34,11 @@ class A_EntityFactory extends a_concept_1.A_Fragment {
     has(param1) {
         let name;
         switch (true) {
-            case param1 instanceof a_utils_1.ASEID:
+            case param1 instanceof a_concept_1.ASEID:
                 name = param1.entity;
                 break;
-            case !(param1 instanceof a_utils_1.ASEID) && a_utils_1.ASEID.isASEID(param1):
-                name = new a_utils_1.ASEID(param1).entity;
+            case !(param1 instanceof a_concept_1.ASEID) && a_concept_1.ASEID.isASEID(param1):
+                name = new a_concept_1.ASEID(param1).entity;
                 break;
             default:
                 name = param1;
@@ -50,11 +49,11 @@ class A_EntityFactory extends a_concept_1.A_Fragment {
     resolve(param1) {
         let name;
         switch (true) {
-            case param1 instanceof a_utils_1.ASEID:
+            case param1 instanceof a_concept_1.ASEID:
                 name = param1.entity;
                 break;
-            case typeof param1 === 'string' && a_utils_1.ASEID.isASEID(param1):
-                name = new a_utils_1.ASEID(param1).entity;
+            case typeof param1 === 'string' && a_concept_1.ASEID.isASEID(param1):
+                name = new a_concept_1.ASEID(param1).entity;
                 break;
             default:
                 name = param1;

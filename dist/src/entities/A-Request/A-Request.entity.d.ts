@@ -1,9 +1,10 @@
 import { IncomingHttpHeaders, IncomingMessage } from "http";
 import { A_Entity } from '@adaas/a-concept';
-import { A_ServerError } from "@adaas/a-utils";
 import { A_SERVER_TYPES__RequestConstructor, A_SERVER_TYPES__RequestMethods, A_SERVER_TYPES__RequestSerialized } from "./A-Request.entity.types";
 import { A_Route } from '../A-Route/A-Route.entity';
+import { A_ServerError } from "../../components/A-ServerError/A-ServerError.class";
 export declare class A_Request<_ReqBodyType = any, _ResponseType = any, _ParamsType extends Record<string, string> = any, _QueryType = any> extends A_Entity<A_SERVER_TYPES__RequestConstructor, A_SERVER_TYPES__RequestSerialized> {
+    static get namespace(): string;
     req: IncomingMessage;
     body: _ReqBodyType;
     params: _ParamsType;
@@ -15,7 +16,7 @@ export declare class A_Request<_ReqBodyType = any, _ResponseType = any, _ParamsT
      */
     duration: number;
     fromNew(newEntity: A_SERVER_TYPES__RequestConstructor): void;
-    protected generateRequestId(): string;
+    get startedAt(): Date | undefined;
     get url(): string;
     get method(): A_SERVER_TYPES__RequestMethods;
     get headers(): IncomingHttpHeaders;

@@ -47,14 +47,14 @@
   },
   "homepage": "https://github.com/ADAAS-org/adaas-a-server#readme",
   "dependencies": {
-    "@adaas/a-concept": "^0.0.62",
-    "@adaas/a-utils": "^0.0.8",
-    "@types/node": "^20.10.0"
+    "@adaas/a-concept": "^0.1.24",
+    "@adaas/a-utils": "^0.1.10"
   },
   "devDependencies": {
     "@types/chai": "^4.3.14",
     "@types/jest": "^29.5.12",
     "@types/mocha": "^10.0.6",
+    "@types/node": "^24.9.1",
     "axios": "^1.7.2",
     "chai": "^5.1.0",
     "dotenv": "^16.4.5",

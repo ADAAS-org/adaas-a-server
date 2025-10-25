@@ -5,7 +5,7 @@ import { A_Response } from "../../entities/A-Response/A-Response.entity";
 export declare class A_EntityController extends A_Component {
     load(request: A_Request<any, any, {
         aseid: string;
-    }>, response: A_Response, factory: A_EntityFactory, scope: A_Scope): Promise<void>;
+    }>, response: A_Response, scope: A_Scope): Promise<void>;
     create(request: A_Request<any, any, {
         aseid: string;
     }>, factory: A_EntityFactory, scope: A_Scope): Promise<void>;

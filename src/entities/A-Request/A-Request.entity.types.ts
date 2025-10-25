@@ -1,6 +1,6 @@
-import { IncomingMessage, ServerResponse } from "http";
+import { IncomingMessage } from "http";
 import { A_Request } from "./A-Request.entity";
-import { A_Feature, A_TYPES__Entity_JSON } from "@adaas/a-concept";
+import { A_TYPES__Entity_Serialized } from "@adaas/a-concept";
 
 
 export type A_SERVER_TYPES__RequestConstructor = {
@@ -13,7 +13,7 @@ export type A_SERVER_TYPES__RequestConstructor = {
 };
 
 export type A_SERVER_TYPES__RequestSerialized = {
-} & A_TYPES__Entity_JSON;
+} & A_TYPES__Entity_Serialized;
 
 
 

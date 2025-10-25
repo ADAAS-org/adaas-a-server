@@ -1,9 +1,10 @@
-import { A_Component, A_Config, A_Feature, A_Inject } from '@adaas/a-concept';
+import { A_Component, A_Feature, A_Inject } from '@adaas/a-concept';
 import { A_SERVER_TYPES__CorsConfig } from './A_ServerCORS.component.types';
 import { A_SERVER_DEFAULTS__CorsConfig } from './A_ServerCORS.component.defaults';
 import { A_SERVER_TYPES__ServerFeature } from '@adaas/a-server/containers/A-Service/A-Service.container.types';
 import { A_Request } from '@adaas/a-server/entities/A-Request/A-Request.entity';
 import { A_Response } from '@adaas/a-server/entities/A-Response/A-Response.entity';
+import { A_Config } from '@adaas/a-utils';
 
 
 export class A_ServerCORS extends A_Component {

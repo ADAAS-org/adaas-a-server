@@ -1,22 +1,17 @@
 import { A_EntityController } from "@adaas/a-server/components/A-EntityController/A-EntityController.component"
 import { A_Router } from "@adaas/a-server/components/A-Router/A-Router.component"
 import { A_Service } from "@adaas/a-server/containers/A-Service/A-Service.container"
-import { A_EntityFactory } from "@adaas/a-server/context/A-EntityFactory/A-EntityFactory.context"
 import { User } from "./entities/User/User.entity"
 import { A_ServerLogger } from "@adaas/a-server/components/A-ServerLogger/A_ServerLogger.component"
 import {
     A_Concept,
-    A_Config,
-    A_ConfigLoader,
-    A_ErrorsManager,
-    ConfigReader,
-    ENVConfigReader,
-    FileConfigReader
+    A_CONSTANTS__DEFAULT_ENV_VARIABLES,
+    A_CONSTANTS__DEFAULT_ENV_VARIABLES_ARRAY,
 } from "@adaas/a-concept"
 import { UsersRepository } from "./components/Users.repository"
 import { TestController } from "./components/Test.controller"
 import { A_ServerHealthMonitor } from "@adaas/a-server/components/A-ServerHealthMonitor/A-ServerHealthMonitor.component"
-import { A_ProxyConfig } from "@adaas/a-server/context/A_ProxyConfig/A_ProxyConfig.context"
+import { A_ProxyConfig } from "@adaas/a-server/context/A-ProxyConfig/A_ProxyConfig.context"
 import { A_ServerProxy } from "@adaas/a-server/components/A-ServerProxy/A-ServerProxy.component"
 import { A_ServerCORS } from "@adaas/a-server/components/A-ServerCORS/A_ServerCORS.component"
 import { A_StaticLoader } from "@adaas/a-server/components/A-StaticLoader/A-StaticLoader.component"
@@ -26,14 +21,18 @@ import { A_Controller } from "@adaas/a-server/components/A-Controller/A-Controll
 import { A_ListingController } from "@adaas/a-server/components/A-ListingController/A-ListingController.component"
 import { A_CommandController } from "@adaas/a-server/components/A-CommandController/A-CommandController.component"
 import { SignInCommand } from "./commands/SignIn.command"
+import { A_Config, A_ConfigLoader, A_Polyfill, ConfigReader, ENVConfigReader, FileConfigReader } from "@adaas/a-utils"
 
 
 
 (async () => {
     const config = new A_Config({
-        variables: ['PORT', 'A_ROUTER__PARSE_PARAMS_AUTOMATICALLY', 'CONFIG_VERBOSE', 'DEV_MODE'],
+        variables: [
+            ...A_CONSTANTS__DEFAULT_ENV_VARIABLES_ARRAY,
+            'A_SERVER_PORT', 'A_ROUTER__PARSE_PARAMS_AUTOMATICALLY', 'CONFIG_VERBOSE', 'DEV_MODE'
+        ] as const,
         defaults: {
-            PORT: 3000,
+            A_SERVER_PORT: 3000,
             A_ROUTER__PARSE_PARAMS_AUTOMATICALLY: true,
             CONFIG_VERBOSE: true,
             DEV_MODE: true
@@ -42,8 +41,6 @@ import { SignInCommand } from "./commands/SignIn.command"
 
     const SharedConfig = new A_ConfigLoader({
         components: [
-            ConfigReader,
-            FileConfigReader,
             ENVConfigReader
         ],
         fragments: [config]
@@ -52,7 +49,7 @@ import { SignInCommand } from "./commands/SignIn.command"
 
     const Server = new A_Service({
         components: [
-            A_ErrorsManager,
+            A_Polyfill,
             A_ServerLogger,
             A_Router,
             A_EntityController,
@@ -65,16 +62,16 @@ import { SignInCommand } from "./commands/SignIn.command"
             A_Controller,
             A_ServerCORS,
             A_ListingController,
-            A_CommandController
+            A_CommandController,
+
         ],
-        commands: [
-            SignInCommand
+        entities: [
+            // commands
+            SignInCommand,
+            User
         ],
         fragments: [
-            config,
-            new A_EntityFactory({
-                'user': User
-            })
+            config
         ]
     });
 
@@ -95,6 +92,7 @@ import { SignInCommand } from "./commands/SignIn.command"
     const concept = new A_Concept({
         name: 'simple-server-concept',
         containers: [SharedConfig, Server],
+        components: [A_Polyfill],
         fragments: [
             config,
             new A_ProxyConfig({
@@ -106,6 +104,7 @@ import { SignInCommand } from "./commands/SignIn.command"
         ],
         entities: []
     });
+
 
 
     await concept.load();

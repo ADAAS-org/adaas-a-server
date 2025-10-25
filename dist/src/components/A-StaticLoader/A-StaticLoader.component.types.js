@@ -29,6 +29,7 @@ const url_1 = require("url");
 const A_Request_entity_1 = require("../../entities/A-Request/A-Request.entity");
 const A_Response_entity_1 = require("../../entities/A-Response/A-Response.entity");
 const A_Service_container_types_1 = require("../../containers/A-Service/A-Service.container.types");
+const a_utils_1 = require("@adaas/a-utils");
 class A_StaticLoader extends a_concept_1.A_Component {
     // =======================================================
     // ================ Method Definition=====================
@@ -103,6 +104,6 @@ __decorate([
     }),
     __param(0, (0, a_concept_1.A_Inject)(A_Request_entity_1.A_Request)),
     __param(1, (0, a_concept_1.A_Inject)(A_Response_entity_1.A_Response)),
-    __param(2, (0, a_concept_1.A_Inject)(a_concept_1.A_Logger))
+    __param(2, (0, a_concept_1.A_Inject)(a_utils_1.A_Logger))
 ], A_StaticLoader.prototype, "onRequest", null);
 //# sourceMappingURL=A-StaticLoader.component.types.js.map

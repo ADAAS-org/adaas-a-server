@@ -24,18 +24,26 @@ const A_Request_entity_1 = require("../../entities/A-Request/A-Request.entity");
 const A_Router_component_1 = require("../A-Router/A-Router.component");
 const A_EntityFactory_context_1 = require("../../context/A-EntityFactory/A-EntityFactory.context");
 const A_Response_entity_1 = require("../../entities/A-Response/A-Response.entity");
-const a_utils_1 = require("@adaas/a-utils");
+const A_ServerError_class_1 = require("../A-ServerError/A-ServerError.class");
 class A_EntityController extends a_concept_1.A_Component {
     // =======================================================
     // ================ Method Definition=====================
     // =======================================================
-    load(request, response, factory, scope) {
+    load(request, response, scope) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!a_utils_1.ASEID.isASEID(request.params.aseid)) {
+            // Check if the scope has a manifest and if the entity is allowed to save
+            // if (
+            //     scope.has(A_Manifest) && !scope.resolve(A_Manifest)
+            //         .isAllowed(entity.constructor, 'save')
+            //         .for(entity.constructor as A_TYPES__Entity_Constructor)
+            // )
+            //     return;
+            if (!a_concept_1.ASEID.isASEID(request.params.aseid)) {
                 response.add('A_EntityController.load', 'Invalid ASEID');
                 return;
             }
-            const constructor = factory.resolve(request.params.aseid);
+            const aseid = new a_concept_1.ASEID(request.params.aseid);
+            const constructor = scope.resolveConstructor(aseid.entity);
             if (constructor) {
                 const entity = new constructor(request.params.aseid);
                 scope.register(entity);
@@ -43,7 +51,11 @@ class A_EntityController extends a_concept_1.A_Component {
                 return response.status(200).json(entity.toJSON());
             }
             else
-                throw new Error('Entity is not available or invalid');
+                throw new A_ServerError_class_1.A_ServerError({
+                    title: 'Entity Not Found',
+                    description: `Entity constructor for ASEID ${request.params.aseid} not found`,
+                    status: 404,
+                });
         });
     }
     create(request, factory, scope) {
@@ -58,7 +70,7 @@ class A_EntityController extends a_concept_1.A_Component {
     }
     update(request, response, factory, scope) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!a_utils_1.ASEID.isASEID(request.params.aseid)) {
+            if (!a_concept_1.ASEID.isASEID(request.params.aseid)) {
                 response.add('A_EntityController.update', 'Invalid ASEID');
                 return;
             }
@@ -72,7 +84,7 @@ class A_EntityController extends a_concept_1.A_Component {
     }
     delete(request, response, factory, scope) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!a_utils_1.ASEID.isASEID(request.params.aseid)) {
+            if (!a_concept_1.ASEID.isASEID(request.params.aseid)) {
                 response.add('A_EntityController.delete', 'Invalid ASEID');
                 return;
             }
@@ -84,9 +96,13 @@ class A_EntityController extends a_concept_1.A_Component {
             }
         });
     }
+    // @A_Feature.Define({
+    //     name: 'callEntity',
+    //     invoke: false
+    // })
     callEntity(request, response, factory, scope) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!a_utils_1.ASEID.isASEID(request.params.aseid)) {
+            if (!a_concept_1.ASEID.isASEID(request.params.aseid)) {
                 response.add('A_EntityController.callEntity', 'Invalid ASEID');
                 return;
             }
@@ -107,7 +123,7 @@ class A_EntityController extends a_concept_1.A_Component {
             yield entity[targetFeature.handler](scope);
             response.add('result', scope.toJSON());
             response.add('entity', entity);
-            response.add('type', entity.entity);
+            response.add('type', entity.aseid.entity);
         });
     }
 }
@@ -124,8 +140,7 @@ __decorate([
     }),
     __param(0, (0, a_concept_1.A_Inject)(A_Request_entity_1.A_Request)),
     __param(1, (0, a_concept_1.A_Inject)(A_Response_entity_1.A_Response)),
-    __param(2, (0, a_concept_1.A_Inject)(A_EntityFactory_context_1.A_EntityFactory)),
-    __param(3, (0, a_concept_1.A_Inject)(a_concept_1.A_Scope))
+    __param(2, (0, a_concept_1.A_Inject)(a_concept_1.A_Scope))
 ], A_EntityController.prototype, "load", null);
 __decorate([
     A_Router_component_1.A_Router.Post({
@@ -160,10 +175,6 @@ __decorate([
     __param(3, (0, a_concept_1.A_Inject)(a_concept_1.A_Scope))
 ], A_EntityController.prototype, "delete", null);
 __decorate([
-    a_concept_1.A_Feature.Define({
-        name: 'callEntity',
-        invoke: false
-    }),
     A_Router_component_1.A_Router.Post({
         path: '/:aseid/:action',
         version: 'v1',

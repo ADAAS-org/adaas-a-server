@@ -1,4 +1,4 @@
-import { A_Component, A_Concept, A_Feature, A_Inject, A_Logger } from "@adaas/a-concept"
+import { A_Component, A_Concept, A_Feature, A_Inject } from "@adaas/a-concept"
 import fs from "fs";
 import path from "path";
 import { URL } from "url";
@@ -7,6 +7,7 @@ import { A_Response } from "@adaas/a-server/entities/A-Response/A-Response.entit
 import { A_SERVER_TYPES__ServerFeature } from "@adaas/a-server/containers/A-Service/A-Service.container.types";
 import { A_Route } from "@adaas/a-server/entities/A-Route/A-Route.entity";
 import { A_StaticConfig } from "@adaas/a-server/context/A-StaticConfig/A-StaticConfig.context";
+import { A_Logger } from "@adaas/a-utils";
 
 
 export class A_StaticLoader extends A_Component {

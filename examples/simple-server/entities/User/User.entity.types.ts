@@ -1,4 +1,4 @@
-import { A_TYPES__Entity_JSON } from "@adaas/a-concept"
+import { A_TYPES__Entity_Serialized } from "@adaas/a-concept"
 
 
 export type NewUser = {
@@ -8,4 +8,4 @@ export type NewUser = {
 }
 
 
-export type UserJSON = NewUser & A_TYPES__Entity_JSON
+export type UserJSON = NewUser & A_TYPES__Entity_Serialized

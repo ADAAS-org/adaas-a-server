@@ -1,19 +1,20 @@
-import { A_Component, A_Config, A_Feature, A_Inject, A_Scope } from "@adaas/a-concept"
+import { A_Component,  A_Feature, A_Inject, A_Scope } from "@adaas/a-concept"
 import { A_EntityFactory } from "@adaas/a-server/context/A-EntityFactory/A-EntityFactory.context";
 import { A_Request } from "@adaas/a-server/entities/A-Request/A-Request.entity";
 import { A_Response } from "@adaas/a-server/entities/A-Response/A-Response.entity";
 import { A_Router } from "../A-Router/A-Router.component";
 import { A_EntityList } from "@adaas/a-server/entities/A_EntityList/A_EntityList.entity";
-import { A_ListQueryFilter } from "@adaas/a-server/context/A_ListQueryFilter/A_ListQueryFilter.context";
+import { A_ListQueryFilter } from "@adaas/a-server/context/A-ListQueryFilter/A_ListQueryFilter.context";
+import { A_Config } from "@adaas/a-utils";
 
 
 
 export class A_ListingController extends A_Component {
 
-    @A_Feature.Define({
-        name: 'listEntities',
-        invoke: false
-    })
+    // @A_Feature.Define({
+    //     name: 'listEntities',
+    //     invoke: false
+    // })
     @A_Router.Get({
         path: '/:type',
         version: 'v1',

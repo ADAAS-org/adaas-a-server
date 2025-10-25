@@ -1,4 +1,4 @@
-import { A_Entity, A_TYPES__Entity_JSON } from "@adaas/a-concept";
+import { A_Entity, A_TYPES__Entity_Serialized } from "@adaas/a-concept";
 
 
 export type A_SERVER_TYPES__A_EntityListConstructor = {
@@ -15,13 +15,13 @@ export type A_SERVER_TYPES__A_EntityListSerialized<EntityTypes extends A_Entity 
     items: Array<ReturnType<EntityTypes['toJSON']>>,
     type: string,
     pagination: A_SERVER_TYPES__A_EntityListPagination
-} & A_TYPES__Entity_JSON;
+} & A_TYPES__Entity_Serialized;
 
 
 
 export type A_SERVER_TYPES__A_EntityListPagination = {
-        total: number,
-        page: number,
-        pageSize: number,
+    total: number,
+    page: number,
+    pageSize: number,
 }
 

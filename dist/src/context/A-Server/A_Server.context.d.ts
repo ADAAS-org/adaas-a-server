@@ -1,7 +1,7 @@
 import { A_Fragment } from "@adaas/a-concept";
 import { A_SERVER_TYPES__ServerConstructor } from "./A_Server.context.types";
-import { A_TYPES__Required } from "@adaas/a-utils";
 import { A_Route } from "../../entities/A-Route/A-Route.entity";
+import { A_TYPES__Required } from "@adaas/a-concept/dist/src/types/A_Common.types";
 export declare class A_Server extends A_Fragment {
     port: number;
     version: string;

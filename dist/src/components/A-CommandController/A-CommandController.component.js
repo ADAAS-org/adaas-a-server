@@ -24,7 +24,7 @@ const A_Router_component_1 = require("../A-Router/A-Router.component");
 const A_Request_entity_1 = require("../../entities/A-Request/A-Request.entity");
 const A_Response_entity_1 = require("../../entities/A-Response/A-Response.entity");
 class A_CommandController extends a_concept_1.A_Component {
-    handleCommand(req, res, scope) {
+    handleCommand(req, res, scope, container) {
         return __awaiter(this, void 0, void 0, function* () {
             const commandName = req.params.command;
             const CommandConstructor = scope.resolveConstructor(commandName);
@@ -33,6 +33,8 @@ class A_CommandController extends a_concept_1.A_Component {
                 throw new Error(`Command ${commandName} not found`);
             }
             const command = new CommandConstructor(req.body);
+            container.scope.register(command);
+            console.log(`1) Executing command: ${commandName}`);
             yield command.execute();
             const serialized = command.toJSON();
             return res.status(200).json(serialized);
@@ -48,6 +50,7 @@ __decorate([
     }),
     __param(0, (0, a_concept_1.A_Inject)(A_Request_entity_1.A_Request)),
     __param(1, (0, a_concept_1.A_Inject)(A_Response_entity_1.A_Response)),
-    __param(2, (0, a_concept_1.A_Inject)(a_concept_1.A_Scope))
+    __param(2, (0, a_concept_1.A_Inject)(a_concept_1.A_Scope)),
+    __param(3, (0, a_concept_1.A_Inject)(a_concept_1.A_Container))
 ], A_CommandController.prototype, "handleCommand", null);
 //# sourceMappingURL=A-CommandController.component.js.map

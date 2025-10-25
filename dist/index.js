@@ -22,11 +22,11 @@ Object.defineProperty(exports, "A_Service", { enumerable: true, get: function ()
 //  Contexts Export
 var A_Server_context_1 = require("./src/context/A-Server/A_Server.context");
 Object.defineProperty(exports, "A_Server", { enumerable: true, get: function () { return A_Server_context_1.A_Server; } });
-var A_ProxyConfig_context_1 = require("./src/context/A_ProxyConfig/A_ProxyConfig.context");
+var A_ProxyConfig_context_1 = require("./src/context/A-ProxyConfig/A_ProxyConfig.context");
 Object.defineProperty(exports, "A_ProxyConfig", { enumerable: true, get: function () { return A_ProxyConfig_context_1.A_ProxyConfig; } });
 var A_StaticConfig_context_1 = require("./src/context/A-StaticConfig/A-StaticConfig.context");
 Object.defineProperty(exports, "A_StaticConfig", { enumerable: true, get: function () { return A_StaticConfig_context_1.A_StaticConfig; } });
-var A_ListQueryFilter_context_1 = require("./src/context/A_ListQueryFilter/A_ListQueryFilter.context");
+var A_ListQueryFilter_context_1 = require("./src/context/A-ListQueryFilter/A_ListQueryFilter.context");
 Object.defineProperty(exports, "A_ListQueryFilter", { enumerable: true, get: function () { return A_ListQueryFilter_context_1.A_ListQueryFilter; } });
 //  Entities Export
 var A_Request_entity_1 = require("./src/entities/A-Request/A-Request.entity");
@@ -59,7 +59,7 @@ Object.defineProperty(exports, "A_ListingController", { enumerable: true, get: f
 //  Types Export
 __exportStar(require("./src/containers/A-Service/A-Service.container.types"), exports);
 __exportStar(require("./src/containers/A-Service/A-Service.container.types"), exports);
-__exportStar(require("./src/context/A_ProxyConfig/A_ProxyConfig.types"), exports);
+__exportStar(require("./src/context/A-ProxyConfig/A_ProxyConfig.types"), exports);
 __exportStar(require("./src/entities/A-Request/A-Request.entity.types"), exports);
 __exportStar(require("./src/entities/A-Response/A-Response.entity.types"), exports);
 __exportStar(require("./src/components/A-ServerCORS/A_ServerCORS.component.types"), exports);

@@ -1,7 +1,7 @@
-import { A_Entity, A_Scope } from "@adaas/a-concept";
+import { A_Entity, A_Error, A_Scope } from "@adaas/a-concept";
 import { IncomingHttpHeaders, ServerResponse } from "http";
 import { A_SERVER_TYPES__ResponseConstructor, A_SERVER_TYPES__ResponseSerialized, A_SERVER_TYPES__SendResponseObject } from "./A-Response.entity.types";
-import { A_Error, A_ServerError } from "@adaas/a-utils";
+import { A_ServerError } from "../../components/A-ServerError/A-ServerError.class";
 export declare class A_Response<_ResponseType = any> extends A_Entity<A_SERVER_TYPES__ResponseConstructor, A_SERVER_TYPES__ResponseSerialized> {
     /**
      * Duration of the request in milliseconds
@@ -15,7 +15,7 @@ export declare class A_Response<_ResponseType = any> extends A_Entity<A_SERVER_T
     get original(): ServerResponse<import("http").IncomingMessage>;
     get statusCode(): number;
     init(): Promise<void>;
-    failed(error: A_ServerError | A_Error | Error | unknown): void;
+    failed(error: A_ServerError | A_Error | Error | any): void;
     send(data?: string | object): void;
     destroy(error: Error | unknown, scope?: A_Scope): Promise<any>;
     json(data?: object): void;

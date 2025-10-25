@@ -24,6 +24,7 @@ const A_ServerCORS_component_defaults_1 = require("./A_ServerCORS.component.defa
 const A_Service_container_types_1 = require("../../containers/A-Service/A-Service.container.types");
 const A_Request_entity_1 = require("../../entities/A-Request/A-Request.entity");
 const A_Response_entity_1 = require("../../entities/A-Response/A-Response.entity");
+const a_utils_1 = require("@adaas/a-utils");
 class A_ServerCORS extends a_concept_1.A_Component {
     init(config) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -57,7 +58,7 @@ __decorate([
     a_concept_1.A_Feature.Extend({
         name: A_Service_container_types_1.A_SERVER_TYPES__ServerFeature.beforeStart
     }),
-    __param(0, (0, a_concept_1.A_Inject)(a_concept_1.A_Config))
+    __param(0, (0, a_concept_1.A_Inject)(a_utils_1.A_Config))
 ], A_ServerCORS.prototype, "init", null);
 __decorate([
     a_concept_1.A_Feature.Extend({

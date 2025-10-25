@@ -1,4 +1,4 @@
-import { A_Config, A_Feature, A_Inject, A_Logger, A_Scope } from "@adaas/a-concept";
+import { A_Container, A_Feature, A_Inject, } from "@adaas/a-concept";
 import { A_SERVER_TYPES__ServerFeature } from "@adaas/a-server/containers/A-Service/A-Service.container.types";
 import { A_Server } from "@adaas/a-server/context/A-Server/A_Server.context";
 import { A_SERVER_TYPES__ServerLoggerEnvVariables, A_SERVER_TYPES__ServerLoggerRouteParams } from "./A_ServerLogger.component.types";
@@ -8,13 +8,12 @@ import { A_Response } from "@adaas/a-server/entities/A-Response/A-Response.entit
 import { A_SERVER_TYPES__ResponseEvent } from "@adaas/a-server/entities/A-Response/A-Response.entity.types";
 import { A_Route } from "@adaas/a-server/entities/A-Route/A-Route.entity";
 import { A_SERVER_TYPES__RequestEvent } from "@adaas/a-server/entities/A-Request/A-Request.entity.types";
-import { A_TYPES__ConceptENVVariables } from "@adaas/a-concept/dist/src/constants/env.constants";
+import { A_Config, A_Logger } from "@adaas/a-utils";
 
 
 export class A_ServerLogger extends A_Logger {
 
     protected config!: A_Config<A_SERVER_TYPES__ServerLoggerEnvVariables>
-
 
 
     @A_Feature.Extend({
@@ -44,19 +43,17 @@ export class A_ServerLogger extends A_Logger {
     }
 
 
-    @A_Feature.Define({ invoke: false })
     @A_Feature.Extend({
         name: A_SERVER_TYPES__ServerFeature.afterStart,
         scope: [A_Service]
     })
     logStart(
-        @A_Inject(A_Server) server: A_Server,
-    ) {
+        @A_Inject(A_Service) container: A_Service,
+    ): void {
         this.serverReady({
-            port: server.port,
+            port: container.port,
             app: {
-                name: server.name,
-                version: server.version
+                name: container.name,
             }
         })
     }

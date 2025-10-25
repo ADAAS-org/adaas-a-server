@@ -48,10 +48,6 @@ class A_Controller extends a_concept_1.A_Component {
 }
 exports.A_Controller = A_Controller;
 __decorate([
-    a_concept_1.A_Feature.Define({
-        name: 'callEntityMethod',
-        invoke: false,
-    }),
     A_Router_component_1.A_Router.Post({
         path: '/:component/:operation',
         version: 'v1',

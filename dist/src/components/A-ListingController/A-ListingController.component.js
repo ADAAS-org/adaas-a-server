@@ -25,8 +25,13 @@ const A_Request_entity_1 = require("../../entities/A-Request/A-Request.entity");
 const A_Response_entity_1 = require("../../entities/A-Response/A-Response.entity");
 const A_Router_component_1 = require("../A-Router/A-Router.component");
 const A_EntityList_entity_1 = require("../../entities/A_EntityList/A_EntityList.entity");
-const A_ListQueryFilter_context_1 = require("../../context/A_ListQueryFilter/A_ListQueryFilter.context");
+const A_ListQueryFilter_context_1 = require("../../context/A-ListQueryFilter/A_ListQueryFilter.context");
+const a_utils_1 = require("@adaas/a-utils");
 class A_ListingController extends a_concept_1.A_Component {
+    // @A_Feature.Define({
+    //     name: 'listEntities',
+    //     invoke: false
+    // })
     list(request, response, factory, scope, config) {
         return __awaiter(this, void 0, void 0, function* () {
             const constructor = factory.resolveByName(request.params.type);
@@ -53,10 +58,6 @@ class A_ListingController extends a_concept_1.A_Component {
 }
 exports.A_ListingController = A_ListingController;
 __decorate([
-    a_concept_1.A_Feature.Define({
-        name: 'listEntities',
-        invoke: false
-    }),
     A_Router_component_1.A_Router.Get({
         path: '/:type',
         version: 'v1',
@@ -66,6 +67,6 @@ __decorate([
     __param(1, (0, a_concept_1.A_Inject)(A_Response_entity_1.A_Response)),
     __param(2, (0, a_concept_1.A_Inject)(A_EntityFactory_context_1.A_EntityFactory)),
     __param(3, (0, a_concept_1.A_Inject)(a_concept_1.A_Scope)),
-    __param(4, (0, a_concept_1.A_Inject)(a_concept_1.A_Config))
+    __param(4, (0, a_concept_1.A_Inject)(a_utils_1.A_Config))
 ], A_ListingController.prototype, "list", null);
 //# sourceMappingURL=A-ListingController.component.js.map

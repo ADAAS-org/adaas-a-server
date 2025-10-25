@@ -8,10 +8,6 @@ import { A_Request } from "@adaas/a-server/entities/A-Request/A-Request.entity";
 export class A_Controller extends A_Component {
 
 
-    @A_Feature.Define({
-        name: 'callEntityMethod',
-        invoke: false,
-    })
     @A_Router.Post({
         path: '/:component/:operation',
         version: 'v1',

@@ -1,7 +1,5 @@
-import crypto from 'crypto';
-import { IncomingHttpHeaders, IncomingMessage, ServerResponse } from "http";
-import { A_Context, A_Entity, A_TYPES__Entity_JSON, A_TYPES__EntityBaseMethods } from '@adaas/a-concept';
-import { A_Error, A_ServerError, ASEID } from "@adaas/a-utils";
+import { IncomingHttpHeaders, IncomingMessage } from "http";
+import { A_Context, A_Entity, A_IdentityHelper, ASEID, } from '@adaas/a-concept';
 import {
     A_SERVER_TYPES__RequestConstructor,
     A_SERVER_TYPES__RequestEvent,
@@ -9,6 +7,7 @@ import {
     A_SERVER_TYPES__RequestSerialized
 } from "./A-Request.entity.types";
 import { A_Route } from '../A-Route/A-Route.entity';
+import { A_ServerError } from "@adaas/a-server/components/A-ServerError/A-ServerError.class";
 
 
 export class A_Request<
@@ -21,6 +20,11 @@ export class A_Request<
         A_SERVER_TYPES__RequestConstructor,
         A_SERVER_TYPES__RequestSerialized
     > {
+
+    static get namespace(): string {
+        return 'a-server';
+    }
+
     req!: IncomingMessage;
 
     body: _ReqBodyType = {} as _ReqBodyType;
@@ -39,25 +43,20 @@ export class A_Request<
         this.req = newEntity.request;
 
         this.aseid = new ASEID({
-            namespace: A_Context.root.name,
-            scope: newEntity.scope || 'default',
-            entity: 'a-request',
+            concept: A_Context.root.name,
+            scope: newEntity.scope,
+            entity: (this.constructor as typeof A_Request).entity,
             id: newEntity.id
         });
     }
 
+    get startedAt(): Date | undefined {
+        const timeId = A_IdentityHelper.parseTimeId(this.aseid.id.split('-')[0]);
 
-    protected generateRequestId() {
-        // Use the current time, request URL, and a few other details to create a unique ID
-        const hash = crypto.createHash('sha256');
-        const time = Date.now();
-        const method = this.method;
-        const url = this.url;
-        const randomValue = Math.random().toString(); // Adds extra randomness
-
-        hash.update(`${time}-${method}-${url}-${randomValue}`);
-        return hash.digest('hex');
+        return timeId ? new Date(timeId.timestamp) : undefined;
     }
+
+
 
     // Getter for request URL
     public get url(): string {

@@ -10,7 +10,9 @@ class A_Route {
      * returns path only without query and hash
      */
     get path() {
-        return this.url.split('?')[0].split('#')[0];
+        const p = this.url.split('?')[0].split('#')[0];
+        //  ensure that last char is not /
+        return p.endsWith('/') ? p.slice(0, -1) : p;
     }
     get params() {
         var _a;

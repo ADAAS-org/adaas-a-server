@@ -1,4 +1,3 @@
-import { A_Concept, A_Config, A_Container, A_Context, A_Errors, A_Feature, A_Inject, A_Logger, A_Scope, A_TYPES__ComponentMetaKey, } from "@adaas/a-concept";
 import { createServer, IncomingMessage, Server, ServerResponse } from "http";
 import { A_SERVER_TYPES__ServerFeature, A_SERVER_TYPES__ServerFeatures } from "./A-Service.container.types";
 import { A_Server } from "@adaas/a-server/context/A-Server/A_Server.context";
@@ -6,6 +5,8 @@ import { A_Request } from "@adaas/a-server/entities/A-Request/A-Request.entity";
 import { A_Response } from "@adaas/a-server/entities/A-Response/A-Response.entity";
 import crypto from 'crypto';
 import { A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES_ARRAY, A_TYPES__ServerENVVariables } from "@adaas/a-server/constants/env.constants";
+import { A_Concept, A_Container, A_Feature, A_IdentityHelper, A_Scope } from "@adaas/a-concept";
+import { A_Config, A_Logger } from "@adaas/a-utils";
 
 
 
@@ -18,20 +19,15 @@ import { A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES_ARRAY, A_TYPES__ServerENVVari
 export class A_Service extends A_Container {
 
     private server!: Server;
-    private port: number = 3000;
+    port!: number;
 
     @A_Concept.Load()
     async load() {
-        if (!this.Scope.has(A_Errors)) {
-            const errorsRegistry = new A_Errors({});
-
-            this.Scope.register(errorsRegistry);
-        }
 
         let config: A_Config<A_TYPES__ServerENVVariables>;
         let aServer: A_Server;
 
-        if (!this.Scope.has(A_Config<A_TYPES__ServerENVVariables>)) {
+        if (!this.scope.has(A_Config<A_TYPES__ServerENVVariables>)) {
             const config = new A_Config<A_TYPES__ServerENVVariables>({
                 variables: [...Array.from(A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES_ARRAY)],
                 defaults: {
@@ -39,13 +35,13 @@ export class A_Service extends A_Container {
                 }
             });
 
-            this.Scope.register(config);
+            this.scope.register(config);
         }
 
-        config = this.Scope.resolve(A_Config) as A_Config<A_TYPES__ServerENVVariables>;
+        config = this.scope.resolve(A_Config) as A_Config<A_TYPES__ServerENVVariables>;
 
 
-        if (!this.Scope.has(A_Server)) {
+        if (!this.scope.has(A_Server)) {
             aServer = new A_Server({
                 port: config.get('A_SERVER_PORT'),
                 name: this.name,
@@ -53,21 +49,12 @@ export class A_Service extends A_Container {
             });
         }
 
-
-
         // Set the server to listen on port 3000
-        const port = config.get('A_SERVER_PORT');
+        this.port = config.get('A_SERVER_PORT');
 
         // Create the HTTP server
         this.server = createServer(this.onRequest.bind(this));
 
-        const newServer = new A_Server({
-            port,
-            name: this.name,
-            version: 'v1'
-        });
-
-        this.Scope.register(newServer);
     }
 
     protected listen(): Promise<void> {
@@ -120,35 +107,50 @@ export class A_Service extends A_Container {
         await this.call(A_SERVER_TYPES__ServerFeature.afterStop)
     }
 
+    @A_Feature.Define({
+        name: A_SERVER_TYPES__ServerFeature.beforeRequest,
+        invoke: true
+    })
+    async beforeRequest(scope: A_Scope) { }
 
+    @A_Feature.Define({
+        name: A_SERVER_TYPES__ServerFeature.beforeRequest,
+        invoke: true
+    })
+    async afterRequest(scope: A_Scope) { }
 
     @A_Feature.Define({
         name: A_SERVER_TYPES__ServerFeature.onRequest,
         invoke: false
     })
-    /**
-     * Handle incoming requests
-     */
     async onRequest(
         request: IncomingMessage,
         response: ServerResponse
     ) {
+        const scope = new A_Scope({
+            name: `a-server-request::${Date.now()}`,
+        });
+
         // We need it to stop feature execution in case request ends
         const { req, res } = await this.convertToAServer(request, response);
 
         try {
-            const scope = new A_Scope({
-                name: `a-server-request::${Date.now()}`,
-                entities: [req, res],
-            });
+            scope.register(req);
+            scope.register(res);
 
-            await this.call(A_SERVER_TYPES__ServerFeature.beforeRequest, scope);
+            scope.inherit(this.scope);
+
+            await this.beforeRequest(scope);
             await this.call(A_SERVER_TYPES__ServerFeature.onRequest, scope);
-            await this.call(A_SERVER_TYPES__ServerFeature.afterRequest, scope);
+            await this.afterRequest(scope);
 
             await res.status(200).send();
 
         } catch (error) {
+            
+            const logger = this.scope.resolve(A_Logger);
+
+            logger.error(error);
 
             return res.failed(error);
         }
@@ -166,8 +168,8 @@ export class A_Service extends A_Container {
 
         const id = this.generateRequestId(request.method, request.url);
 
-        const req = new A_Request({ id, request, scope: this.Scope.name });
-        const res = new A_Response({ id, response, scope: this.Scope.name });
+        const req = new A_Request({ id, request, scope: this.scope.name });
+        const res = new A_Response({ id, response, scope: this.scope.name });
 
         await req.init();
         await res.init();
@@ -181,11 +183,11 @@ export class A_Service extends A_Container {
     ): string {
         // Use the current time, request URL, and a few other details to create a unique ID
         const hash = crypto.createHash('sha256');
-        const time = Date.now();
+        const timeId = A_IdentityHelper.generateTimeId();
         const randomValue = Math.random().toString(); // Adds extra randomness
 
-        hash.update(`${time}-${method}-${url}-${randomValue}`);
-        return hash.digest('hex');
+        hash.update(`${timeId}-${method}-${url}-${randomValue}`);
+        return `${timeId}-${hash.digest('hex')}`;
     }
 
     @A_Feature.Define({ invoke: true })

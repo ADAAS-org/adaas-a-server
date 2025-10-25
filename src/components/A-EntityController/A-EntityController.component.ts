@@ -1,9 +1,10 @@
-import { A_Component, A_Context, A_Feature, A_Inject, A_Scope } from "@adaas/a-concept";
+import { A_Component, A_Context, A_Feature, A_Inject, A_Scope, A_TYPES__Entity_Constructor, ASEID } from "@adaas/a-concept";
 import { A_Request } from "@adaas/a-server/entities/A-Request/A-Request.entity";
 import { A_Router } from "../A-Router/A-Router.component";
 import { A_EntityFactory } from "@adaas/a-server/context/A-EntityFactory/A-EntityFactory.context";
 import { A_Response } from "@adaas/a-server/entities/A-Response/A-Response.entity";
-import { ASEID } from "@adaas/a-utils";
+import { A_ServerError } from "../A-ServerError/A-ServerError.class";
+import { A_Manifest } from "@adaas/a-utils";
 
 
 
@@ -24,15 +25,27 @@ export class A_EntityController extends A_Component {
     async load(
         @A_Inject(A_Request) request: A_Request<any, any, { aseid: string }>,
         @A_Inject(A_Response) response: A_Response,
-        @A_Inject(A_EntityFactory) factory: A_EntityFactory,
         @A_Inject(A_Scope) scope: A_Scope
     ) {
+        // Check if the scope has a manifest and if the entity is allowed to save
+        // if (
+        //     scope.has(A_Manifest) && !scope.resolve(A_Manifest)
+        //         .isAllowed(entity.constructor, 'save')
+        //         .for(entity.constructor as A_TYPES__Entity_Constructor)
+        // )
+        //     return;
+
+
         if (!ASEID.isASEID(request.params.aseid)) {
             response.add('A_EntityController.load', 'Invalid ASEID');
             return;
         }
 
-        const constructor = factory.resolve(request.params.aseid);
+
+        const aseid = new ASEID(request.params.aseid);
+
+        const constructor = scope.resolveConstructor(aseid.entity);
+
 
         if (constructor) {
             const entity = new constructor(request.params.aseid);
@@ -44,7 +57,11 @@ export class A_EntityController extends A_Component {
             return response.status(200).json(entity.toJSON());
         }
         else
-            throw new Error('Entity is not available or invalid');
+            throw new A_ServerError({
+                title: 'Entity Not Found',
+                description: `Entity constructor for ASEID ${request.params.aseid} not found`,
+                status: 404,
+            });
     }
 
 
@@ -130,10 +147,10 @@ export class A_EntityController extends A_Component {
 
 
 
-    @A_Feature.Define({
-        name: 'callEntity',
-        invoke: false
-    })
+    // @A_Feature.Define({
+    //     name: 'callEntity',
+    //     invoke: false
+    // })
     @A_Router.Post({
         path: '/:aseid/:action',
         version: 'v1',
@@ -176,6 +193,6 @@ export class A_EntityController extends A_Component {
 
         response.add('result', scope.toJSON());
         response.add('entity', entity);
-        response.add('type', entity.entity);
+        response.add('type', entity.aseid.entity);
     }
 }

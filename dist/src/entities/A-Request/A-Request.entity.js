@@ -8,16 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.A_Request = void 0;
-const crypto_1 = __importDefault(require("crypto"));
 const a_concept_1 = require("@adaas/a-concept");
-const a_utils_1 = require("@adaas/a-utils");
 const A_Request_entity_types_1 = require("./A-Request.entity.types");
 const A_Route_entity_1 = require("../A-Route/A-Route.entity");
+const A_ServerError_class_1 = require("../../components/A-ServerError/A-ServerError.class");
 class A_Request extends a_concept_1.A_Entity {
     constructor() {
         super(...arguments);
@@ -29,24 +25,21 @@ class A_Request extends a_concept_1.A_Entity {
          */
         this.duration = 0;
     }
+    static get namespace() {
+        return 'a-server';
+    }
     fromNew(newEntity) {
         this.req = newEntity.request;
-        this.aseid = new a_utils_1.ASEID({
-            namespace: a_concept_1.A_Context.root.name,
-            scope: newEntity.scope || 'default',
-            entity: 'a-request',
+        this.aseid = new a_concept_1.ASEID({
+            concept: a_concept_1.A_Context.root.name,
+            scope: newEntity.scope,
+            entity: this.constructor.entity,
             id: newEntity.id
         });
     }
-    generateRequestId() {
-        // Use the current time, request URL, and a few other details to create a unique ID
-        const hash = crypto_1.default.createHash('sha256');
-        const time = Date.now();
-        const method = this.method;
-        const url = this.url;
-        const randomValue = Math.random().toString(); // Adds extra randomness
-        hash.update(`${time}-${method}-${url}-${randomValue}`);
-        return hash.digest('hex');
+    get startedAt() {
+        const timeId = a_concept_1.A_IdentityHelper.parseTimeId(this.aseid.id.split('-')[0]);
+        return timeId ? new Date(timeId.timestamp) : undefined;
     }
     // Getter for request URL
     get url() {
@@ -68,7 +61,7 @@ class A_Request extends a_concept_1.A_Entity {
     init() {
         return __awaiter(this, void 0, void 0, function* () {
             this.req.on('error', (err) => __awaiter(this, void 0, void 0, function* () {
-                this.error = new a_utils_1.A_ServerError(err);
+                this.error = new A_ServerError_class_1.A_ServerError(err);
                 yield this.call(A_Request_entity_types_1.A_SERVER_TYPES__RequestEvent.Error);
             }));
             this.params = this.extractParams(this.url);

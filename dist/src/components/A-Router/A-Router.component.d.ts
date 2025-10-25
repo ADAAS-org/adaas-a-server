@@ -1,10 +1,11 @@
-import { A_Component, A_Config, A_Logger, A_Scope } from "@adaas/a-concept";
+import { A_Component, A_Scope } from "@adaas/a-concept";
 import { A_Request } from "../../entities/A-Request/A-Request.entity";
 import { A_SERVER_TYPES__ARouterRouteConfig } from "./A-Router.component.types";
 import { A_Route } from "../../entities/A-Route/A-Route.entity";
 import { A_Response } from "../../entities/A-Response/A-Response.entity";
 import { A_ServerLogger } from "../A-ServerLogger/A_ServerLogger.component";
-import { A_TYPES__Required } from "@adaas/a-utils";
+import { A_TYPES__Required } from "@adaas/a-concept/dist/src/types/A_Common.types";
+import { A_Config, A_Logger } from "@adaas/a-utils";
 export declare class A_Router extends A_Component {
     /**
      * Allows to define a custom route for POST requests

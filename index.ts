@@ -6,9 +6,9 @@ export { A_Service } from './src/containers/A-Service/A-Service.container';
 
 //  Contexts Export
 export { A_Server } from './src/context/A-Server/A_Server.context';
-export { A_ProxyConfig } from './src/context/A_ProxyConfig/A_ProxyConfig.context';
+export { A_ProxyConfig } from './src/context/A-ProxyConfig/A_ProxyConfig.context';
 export { A_StaticConfig } from './src/context/A-StaticConfig/A-StaticConfig.context';
-export { A_ListQueryFilter } from './src/context/A_ListQueryFilter/A_ListQueryFilter.context';
+export { A_ListQueryFilter } from './src/context/A-ListQueryFilter/A_ListQueryFilter.context';
 
 //  Entities Export
 export { A_Request } from './src/entities/A-Request/A-Request.entity';
@@ -30,7 +30,7 @@ export { A_ListingController } from './src/components/A-ListingController/A-List
 //  Types Export
 export * from './src/containers/A-Service/A-Service.container.types';
 export * from './src/containers/A-Service/A-Service.container.types';
-export * from './src/context/A_ProxyConfig/A_ProxyConfig.types';
+export * from './src/context/A-ProxyConfig/A_ProxyConfig.types';
 export * from './src/entities/A-Request/A-Request.entity.types';
 export * from './src/entities/A-Response/A-Response.entity.types';
 export * from './src/components/A-ServerCORS/A_ServerCORS.component.types';

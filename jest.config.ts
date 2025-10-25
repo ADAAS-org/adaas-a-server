@@ -18,6 +18,7 @@ const config: Config.InitialOptions = {
         "@adaas/a-server/components/(.*)": ["<rootDir>/src/components/$1"],
         "@adaas/a-server/containers/(.*)": ["<rootDir>/src/containers/$1"],
         "@adaas/a-server/entities/(.*)": ["<rootDir>/src/entities/$1"],
+        "@adaas/a-server/channels/(.*)": ["<rootDir>/src/channels/$1"],
     }
 
 };

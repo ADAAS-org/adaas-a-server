@@ -1,8 +1,9 @@
 import {
     A_Context,
     A_Entity,
-    A_Logger,
+    A_Error,
     A_Scope,
+    ASEID,
 } from "@adaas/a-concept";
 import {
     IncomingHttpHeaders,
@@ -14,11 +15,9 @@ import {
     A_SERVER_TYPES__ResponseSerialized,
     A_SERVER_TYPES__SendResponseObject
 } from "./A-Response.entity.types";
-import {
-    A_Error,
-    A_ServerError,
-    ASEID
-} from "@adaas/a-utils";
+import { A_ServerError } from "@adaas/a-server/components/A-ServerError/A-ServerError.class";
+import { A_Logger } from "@adaas/a-utils";
+
 
 
 
@@ -28,6 +27,9 @@ export class A_Response<
     A_SERVER_TYPES__ResponseConstructor,
     A_SERVER_TYPES__ResponseSerialized
 > {
+
+
+
     /**
      * Duration of the request in milliseconds
      */
@@ -42,9 +44,9 @@ export class A_Response<
         this.res = newEntity.response;
 
         this.aseid = new ASEID({
-            namespace: A_Context.root.name,
-            scope: newEntity.scope || 'default',
-            entity: 'a-response',
+            concept: A_Context.root.name,
+            scope: newEntity.scope,
+            entity: (this.constructor as typeof A_Response).entity,
             id: newEntity.id
         });
     }
@@ -61,7 +63,7 @@ export class A_Response<
         return this.res.statusCode;
     }
 
-     async init(): Promise<void> {
+    async init(): Promise<void> {
         const startTime = process.hrtime();
 
         this.res.on('finish', async () => {
@@ -80,7 +82,7 @@ export class A_Response<
 
 
 
-    public failed(error: A_ServerError | A_Error | Error | unknown): void {
+    public failed(error: A_ServerError | A_Error | Error | any): void {
         switch (true) {
             case error instanceof A_ServerError:
                 this.error = error;
@@ -98,7 +100,7 @@ export class A_Response<
                 break;
         }
 
-        return this.status(this.error.serverCode).json(this.error);
+        return this.status(this.error.status).json(this.error);
     }
 
     // Send a plain text or JSON response

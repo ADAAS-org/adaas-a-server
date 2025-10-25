@@ -31,6 +31,7 @@ const A_Response_entity_1 = require("../../entities/A-Response/A-Response.entity
 const A_Service_container_types_1 = require("../../containers/A-Service/A-Service.container.types");
 const A_Route_entity_1 = require("../../entities/A-Route/A-Route.entity");
 const A_StaticConfig_context_1 = require("../../context/A-StaticConfig/A-StaticConfig.context");
+const a_utils_1 = require("@adaas/a-utils");
 class A_StaticLoader extends a_concept_1.A_Component {
     load(logger, config) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -110,7 +111,7 @@ class A_StaticLoader extends a_concept_1.A_Component {
 exports.A_StaticLoader = A_StaticLoader;
 __decorate([
     a_concept_1.A_Concept.Load(),
-    __param(0, (0, a_concept_1.A_Inject)(a_concept_1.A_Logger)),
+    __param(0, (0, a_concept_1.A_Inject)(a_utils_1.A_Logger)),
     __param(1, (0, a_concept_1.A_Inject)(A_StaticConfig_context_1.A_StaticConfig))
 ], A_StaticLoader.prototype, "load", null);
 __decorate([
@@ -119,7 +120,7 @@ __decorate([
     }),
     __param(0, (0, a_concept_1.A_Inject)(A_Request_entity_1.A_Request)),
     __param(1, (0, a_concept_1.A_Inject)(A_Response_entity_1.A_Response)),
-    __param(2, (0, a_concept_1.A_Inject)(a_concept_1.A_Logger)),
+    __param(2, (0, a_concept_1.A_Inject)(a_utils_1.A_Logger)),
     __param(3, (0, a_concept_1.A_Inject)(A_StaticConfig_context_1.A_StaticConfig))
 ], A_StaticLoader.prototype, "onRequest", null);
 //# sourceMappingURL=A-StaticLoader.component.js.map

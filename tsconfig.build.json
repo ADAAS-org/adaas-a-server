@@ -36,6 +36,7 @@
       "@adaas/a-server/helpers/*": ["src/helpers/*"],
       "@adaas/a-server/examples/*": ["src/examples/*"],
       "@adaas/a-server/entities/*": ["src/entities/*"],
+      "@adaas/a-server/channels/*": ["src/channels/*"],
 
       "@adaas/a-server/context/*": ["src/context/*"],
       "@adaas/a-server/components/*": ["src/components/*"],

@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.A_Response = void 0;
 const a_concept_1 = require("@adaas/a-concept");
 const A_Response_entity_types_1 = require("./A-Response.entity.types");
+const A_ServerError_class_1 = require("../../components/A-ServerError/A-ServerError.class");
 const a_utils_1 = require("@adaas/a-utils");
 class A_Response extends a_concept_1.A_Entity {
     constructor() {
@@ -24,10 +25,10 @@ class A_Response extends a_concept_1.A_Entity {
     }
     fromNew(newEntity) {
         this.res = newEntity.response;
-        this.aseid = new a_utils_1.ASEID({
-            namespace: a_concept_1.A_Context.root.name,
-            scope: newEntity.scope || 'default',
-            entity: 'a-response',
+        this.aseid = new a_concept_1.ASEID({
+            concept: a_concept_1.A_Context.root.name,
+            scope: newEntity.scope,
+            entity: this.constructor.entity,
             id: newEntity.id
         });
     }
@@ -56,21 +57,21 @@ class A_Response extends a_concept_1.A_Entity {
     }
     failed(error) {
         switch (true) {
-            case error instanceof a_utils_1.A_ServerError:
+            case error instanceof A_ServerError_class_1.A_ServerError:
                 this.error = error;
                 break;
-            case error instanceof a_utils_1.A_Error:
-                this.error = new a_utils_1.A_ServerError(error);
+            case error instanceof a_concept_1.A_Error:
+                this.error = new A_ServerError_class_1.A_ServerError(error);
                 break;
             default:
-                this.error = new a_utils_1.A_ServerError(error);
+                this.error = new A_ServerError_class_1.A_ServerError(error);
                 break;
         }
-        return this.status(this.error.serverCode).json(this.error);
+        return this.status(this.error.status).json(this.error);
     }
     // Send a plain text or JSON response
     send(data = this.toResponse()) {
-        const logger = a_concept_1.A_Context.scope(this).resolve(a_concept_1.A_Logger);
+        const logger = a_concept_1.A_Context.scope(this).resolve(a_utils_1.A_Logger);
         if (this.headersSent) {
             logger.warning('Response headers already sent, cannot send response again.');
             return;
@@ -100,7 +101,7 @@ class A_Response extends a_concept_1.A_Entity {
     }
     // Explicit JSON response
     json(data = this.toResponse()) {
-        const logger = a_concept_1.A_Context.scope(this).resolve(a_concept_1.A_Logger);
+        const logger = a_concept_1.A_Context.scope(this).resolve(a_utils_1.A_Logger);
         if (this.headersSent) {
             logger.warning('Response headers already sent, cannot send response again.');
             return;

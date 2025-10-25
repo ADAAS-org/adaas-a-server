@@ -27,7 +27,8 @@ const A_Request_entity_1 = require("../../entities/A-Request/A-Request.entity");
 const A_Response_entity_1 = require("../../entities/A-Response/A-Response.entity");
 const A_Response_entity_types_1 = require("../../entities/A-Response/A-Response.entity.types");
 const A_Request_entity_types_1 = require("../../entities/A-Request/A-Request.entity.types");
-class A_ServerLogger extends a_concept_1.A_Logger {
+const a_utils_1 = require("@adaas/a-utils");
+class A_ServerLogger extends a_utils_1.A_Logger {
     onRequestEnd(request, response) {
         return __awaiter(this, void 0, void 0, function* () {
             this.route({
@@ -42,12 +43,11 @@ class A_ServerLogger extends a_concept_1.A_Logger {
         return __awaiter(this, void 0, void 0, function* () {
         });
     }
-    logStart(server) {
+    logStart(container) {
         this.serverReady({
-            port: server.port,
+            port: container.port,
             app: {
-                name: server.name,
-                version: server.version
+                name: container.name,
             }
         });
     }
@@ -151,12 +151,11 @@ __decorate([
     __param(0, (0, a_concept_1.A_Inject)(A_Request_entity_1.A_Request))
 ], A_ServerLogger.prototype, "onRequestError", null);
 __decorate([
-    a_concept_1.A_Feature.Define({ invoke: false }),
     a_concept_1.A_Feature.Extend({
         name: A_Service_container_types_1.A_SERVER_TYPES__ServerFeature.afterStart,
         scope: [A_Service_container_1.A_Service]
     }),
-    __param(0, (0, a_concept_1.A_Inject)(A_Server_context_1.A_Server))
+    __param(0, (0, a_concept_1.A_Inject)(A_Service_container_1.A_Service))
 ], A_ServerLogger.prototype, "logStart", null);
 __decorate([
     a_concept_1.A_Feature.Extend({

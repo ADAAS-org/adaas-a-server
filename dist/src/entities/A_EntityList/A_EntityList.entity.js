@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.A_EntityList = void 0;
 const a_concept_1 = require("@adaas/a-concept");
-const a_utils_1 = require("@adaas/a-utils");
 /**
  * A-EntityList
  *
@@ -45,8 +44,8 @@ class A_EntityList extends a_concept_1.A_Entity {
      * @param newEntity
      */
     fromNew(newEntity) {
-        this.aseid = new a_utils_1.ASEID({
-            namespace: a_concept_1.A_Context.root.name,
+        this.aseid = new a_concept_1.ASEID({
+            concept: a_concept_1.A_Context.root.name,
             scope: 'default',
             entity: 'a-list' + (newEntity.name ? `.${newEntity.name}` : ''),
             id: (new Date()).getTime().toString(),

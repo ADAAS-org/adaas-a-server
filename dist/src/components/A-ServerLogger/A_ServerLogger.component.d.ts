@@ -1,14 +1,15 @@
-import { A_Config, A_Logger } from "@adaas/a-concept";
 import { A_Server } from "../../context/A-Server/A_Server.context";
 import { A_SERVER_TYPES__ServerLoggerEnvVariables, A_SERVER_TYPES__ServerLoggerRouteParams } from "./A_ServerLogger.component.types";
+import { A_Service } from "../../containers/A-Service/A-Service.container";
 import { A_Request } from "../../entities/A-Request/A-Request.entity";
 import { A_Response } from "../../entities/A-Response/A-Response.entity";
 import { A_Route } from "../../entities/A-Route/A-Route.entity";
+import { A_Config, A_Logger } from "@adaas/a-utils";
 export declare class A_ServerLogger extends A_Logger {
     protected config: A_Config<A_SERVER_TYPES__ServerLoggerEnvVariables>;
     onRequestEnd(request: A_Request, response: A_Response): Promise<void>;
     onRequestError(request: A_Request): Promise<void>;
-    logStart(server: A_Server): void;
+    logStart(container: A_Service): void;
     logStop(server: A_Server): void;
     metrics(): void;
     routes(routes: Array<A_Route>): void;

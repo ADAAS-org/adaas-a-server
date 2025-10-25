@@ -46,6 +46,7 @@ const a_concept_1 = require("@adaas/a-concept");
 const A_Router_component_1 = require("../A-Router/A-Router.component");
 const A_Request_entity_1 = require("../../entities/A-Request/A-Request.entity");
 const A_Response_entity_1 = require("../../entities/A-Response/A-Response.entity");
+const a_utils_1 = require("@adaas/a-utils");
 class A_ServerHealthMonitor extends a_concept_1.A_Component {
     // =======================================================
     // ================ Method Definition=====================
@@ -53,6 +54,7 @@ class A_ServerHealthMonitor extends a_concept_1.A_Component {
     get(config, request, response, logger) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
+            logger.log('Health check requested', config.get('A_CONCEPT_ROOT_FOLDER'));
             const packageJSON = yield Promise.resolve(`${`${config.get('A_CONCEPT_ROOT_FOLDER')}/package.json`}`).then(s => __importStar(require(s)));
             const exposedProperties = ((_a = config.get('EXPOSED_PROPERTIES')) === null || _a === void 0 ? void 0 : _a.split(',')) || [
                 'name',
@@ -60,18 +62,20 @@ class A_ServerHealthMonitor extends a_concept_1.A_Component {
                 'description',
             ];
             exposedProperties.forEach(prop => response.add(prop, packageJSON[prop]));
+            console.log(`Health check accessed: ${request.method} ${request.url}`);
         });
     }
 }
 exports.A_ServerHealthMonitor = A_ServerHealthMonitor;
 __decorate([
     A_Router_component_1.A_Router.Get({
-        path: '/health',
+        path: '/',
+        prefix: 'health',
         version: 'v1',
     }),
-    __param(0, (0, a_concept_1.A_Inject)(a_concept_1.A_Config)),
+    __param(0, (0, a_concept_1.A_Inject)(a_utils_1.A_Config)),
     __param(1, (0, a_concept_1.A_Inject)(A_Request_entity_1.A_Request)),
     __param(2, (0, a_concept_1.A_Inject)(A_Response_entity_1.A_Response)),
-    __param(3, (0, a_concept_1.A_Inject)(a_concept_1.A_Logger))
+    __param(3, (0, a_concept_1.A_Inject)(a_utils_1.A_Logger))
 ], A_ServerHealthMonitor.prototype, "get", null);
 //# sourceMappingURL=A-ServerHealthMonitor.component.js.map

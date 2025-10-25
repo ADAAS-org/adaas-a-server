@@ -1,15 +1,15 @@
 import {
     A_Component,
     A_Concept,
-    A_Config,
     A_Context,
     A_Feature,
     A_Feature_Define,
     A_Feature_Extend,
+    A_IdentityHelper,
     A_Inject,
-    A_Logger,
     A_Meta,
-    A_Scope
+    A_Scope,
+    A_TypeGuards
 } from "@adaas/a-concept";
 import { A_Service } from "@adaas/a-server/containers/A-Service/A-Service.container";
 import { A_SERVER_TYPES__ServerFeature } from "@adaas/a-server/containers/A-Service/A-Service.container.types";
@@ -24,7 +24,8 @@ import {
 import { A_Route } from "@adaas/a-server/entities/A-Route/A-Route.entity";
 import { A_Response } from "@adaas/a-server/entities/A-Response/A-Response.entity";
 import { A_ServerLogger } from "../A-ServerLogger/A_ServerLogger.component";
-import { A_TYPES__Required } from "@adaas/a-utils";
+import { A_TYPES__Required } from "@adaas/a-concept/dist/src/types/A_Common.types";
+import { A_Config, A_Logger } from "@adaas/a-utils";
 
 
 
@@ -142,7 +143,7 @@ export class A_Router extends A_Component {
         const route = typeof config.path === 'string' || config.path instanceof RegExp
             ? new A_Route(
                 `/${config.prefix}/${config.version}${config.path instanceof RegExp ? config.path.source : config.path.startsWith('/') ? config.path : `/${config.path}`}`,
-                 config.method)
+                config.method)
             : config.path;
 
         this.routes.push(route);
@@ -193,9 +194,9 @@ export class A_Router extends A_Component {
     // =======================================================
     // ================ Feature Definition=====================
     // =======================================================
-    @A_Feature.Define({
-        invoke: false
-    })
+    // @A_Feature.Define({
+    //     invoke: false
+    // })
     @A_Feature.Extend({
         name: A_SERVER_TYPES__ServerFeature.onRequest,
         scope: [A_Service],
@@ -225,18 +226,21 @@ export class A_Router extends A_Component {
          * And it will return all stages that are similar to the feature name 
          */
 
-        const feature = A_Context.feature(this, route.toString(), scope);
+        const feature = new A_Feature({
+            name: route.toString(),
+            component: this,
+        })
+
 
         for (const stage of feature) {
+            if (A_TypeGuards.isComponentConstructor(stage.definition.component)) {
 
-            for (const step of stage.steps) {
-
-                const meta: A_Meta<A_TYPES__ARouterComponentMeta> = A_Context.meta<A_TYPES__ARouterComponentMeta>(step.component);
+                const meta: A_Meta<A_TYPES__ARouterComponentMeta> = A_Context.meta<A_TYPES__ARouterComponentMeta>(stage.definition.component);
 
                 const routes = meta.get(A_SERVER_TYPES__ARouterComponentMetaKey.ROUTES);
 
                 if (routes) {
-                    const currentRoute = routes.get(step.name || '');
+                    const currentRoute = routes.get(stage.definition.name || '');
 
                     if (currentRoute) {
                         request.params = {
@@ -248,10 +252,17 @@ export class A_Router extends A_Component {
             }
 
             const stageScope = new A_Scope({
-                name: `a-route::${Date.now()}`,
+                name: `a-route--${A_IdentityHelper.generateTimeId()}`,
                 entities: [request],
+            }, {
+                parent: scope
             });
+
+
             await stage.process(stageScope);
         }
+
+
+        console.log('Finished processing route for request:', request.method, request.url);
     }
 }

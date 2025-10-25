@@ -27,6 +27,7 @@ const A_Router_component_types_1 = require("./A-Router.component.types");
 const A_Route_entity_1 = require("../../entities/A-Route/A-Route.entity");
 const A_Response_entity_1 = require("../../entities/A-Response/A-Response.entity");
 const A_ServerLogger_component_1 = require("../A-ServerLogger/A_ServerLogger.component");
+const a_utils_1 = require("@adaas/a-utils");
 class A_Router extends a_concept_1.A_Component {
     // =======================================================
     // ================ Method Definition=====================
@@ -155,6 +156,9 @@ class A_Router extends a_concept_1.A_Component {
     // =======================================================
     // ================ Feature Definition=====================
     // =======================================================
+    // @A_Feature.Define({
+    //     invoke: false
+    // })
     identifyRoute(request, response, scope, config, logger) {
         return __awaiter(this, void 0, void 0, function* () {
             const route = request.route;
@@ -170,24 +174,30 @@ class A_Router extends a_concept_1.A_Component {
              * => Then The feature will be "GET::/api/v1/users"
              * And it will return all stages that are similar to the feature name
              */
-            const feature = a_concept_1.A_Context.feature(this, route.toString(), scope);
+            const feature = new a_concept_1.A_Feature({
+                name: route.toString(),
+                component: this,
+            });
             for (const stage of feature) {
-                for (const step of stage.steps) {
-                    const meta = a_concept_1.A_Context.meta(step.component);
+                if (a_concept_1.A_TypeGuards.isComponentConstructor(stage.definition.component)) {
+                    const meta = a_concept_1.A_Context.meta(stage.definition.component);
                     const routes = meta.get(A_Router_component_types_1.A_SERVER_TYPES__ARouterComponentMetaKey.ROUTES);
                     if (routes) {
-                        const currentRoute = routes.get(step.name || '');
+                        const currentRoute = routes.get(stage.definition.name || '');
                         if (currentRoute) {
                             request.params = Object.assign(Object.assign({}, request.params), currentRoute.route.extractParams(request.url));
                         }
                     }
                 }
                 const stageScope = new a_concept_1.A_Scope({
-                    name: `a-route::${Date.now()}`,
+                    name: `a-route--${a_concept_1.A_IdentityHelper.generateTimeId()}`,
                     entities: [request],
+                }, {
+                    parent: scope
                 });
                 yield stage.process(stageScope);
             }
+            console.log('Finished processing route for request:', request.method, request.url);
         });
     }
 }
@@ -198,9 +208,6 @@ __decorate([
     __param(0, (0, a_concept_1.A_Inject)(A_ServerLogger_component_1.A_ServerLogger))
 ], A_Router.prototype, "load", null);
 __decorate([
-    a_concept_1.A_Feature.Define({
-        invoke: false
-    }),
     a_concept_1.A_Feature.Extend({
         name: A_Service_container_types_1.A_SERVER_TYPES__ServerFeature.onRequest,
         scope: [A_Service_container_1.A_Service],
@@ -208,7 +215,7 @@ __decorate([
     __param(0, (0, a_concept_1.A_Inject)(A_Request_entity_1.A_Request)),
     __param(1, (0, a_concept_1.A_Inject)(A_Response_entity_1.A_Response)),
     __param(2, (0, a_concept_1.A_Inject)(a_concept_1.A_Scope)),
-    __param(3, (0, a_concept_1.A_Inject)(a_concept_1.A_Config)),
-    __param(4, (0, a_concept_1.A_Inject)(a_concept_1.A_Logger))
+    __param(3, (0, a_concept_1.A_Inject)(a_utils_1.A_Config)),
+    __param(4, (0, a_concept_1.A_Inject)(a_utils_1.A_Logger))
 ], A_Router.prototype, "identifyRoute", null);
 //# sourceMappingURL=A-Router.component.js.map

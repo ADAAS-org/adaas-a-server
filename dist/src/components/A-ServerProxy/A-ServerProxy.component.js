@@ -24,10 +24,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.A_ServerProxy = void 0;
 const a_concept_1 = require("@adaas/a-concept");
 const A_Service_container_types_1 = require("../../containers/A-Service/A-Service.container.types");
-const A_ProxyConfig_context_1 = require("../../context/A_ProxyConfig/A_ProxyConfig.context");
+const A_ProxyConfig_context_1 = require("../../context/A-ProxyConfig/A_ProxyConfig.context");
 const A_Request_entity_1 = require("../../entities/A-Request/A-Request.entity");
 const A_Response_entity_1 = require("../../entities/A-Response/A-Response.entity");
 const A_Route_entity_1 = require("../../entities/A-Route/A-Route.entity");
+const a_utils_1 = require("@adaas/a-utils");
 const http_1 = __importDefault(require("http"));
 const https_1 = __importDefault(require("https"));
 class A_ServerProxy extends a_concept_1.A_Component {
@@ -72,7 +73,7 @@ class A_ServerProxy extends a_concept_1.A_Component {
 exports.A_ServerProxy = A_ServerProxy;
 __decorate([
     a_concept_1.A_Concept.Load(),
-    __param(0, (0, a_concept_1.A_Inject)(a_concept_1.A_Logger)),
+    __param(0, (0, a_concept_1.A_Inject)(a_utils_1.A_Logger)),
     __param(1, (0, a_concept_1.A_Inject)(A_ProxyConfig_context_1.A_ProxyConfig))
 ], A_ServerProxy.prototype, "load", null);
 __decorate([
@@ -82,6 +83,6 @@ __decorate([
     __param(0, (0, a_concept_1.A_Inject)(A_Request_entity_1.A_Request)),
     __param(1, (0, a_concept_1.A_Inject)(A_Response_entity_1.A_Response)),
     __param(2, (0, a_concept_1.A_Inject)(A_ProxyConfig_context_1.A_ProxyConfig)),
-    __param(3, (0, a_concept_1.A_Inject)(a_concept_1.A_Logger))
+    __param(3, (0, a_concept_1.A_Inject)(a_utils_1.A_Logger))
 ], A_ServerProxy.prototype, "onRequest", null);
 //# sourceMappingURL=A-ServerProxy.component.js.map

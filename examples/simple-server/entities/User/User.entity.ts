@@ -1,10 +1,13 @@
-import { A_Entity, A_Feature, A_Scope, A_TYPES__EntityBaseMethods } from "@adaas/a-concept";
+import { A_Entity, A_Feature, A_Scope, ASEID,  } from "@adaas/a-concept";
 import { NewUser, UserJSON } from "./User.entity.types";
-import { ASEID } from "@adaas/a-utils";
 import { UserDoing } from "examples/simple-server/context/UserDoing.context";
 
 
 export class User extends A_Entity<NewUser, UserJSON> {
+
+    static get entity(): string {
+        return 'user';
+    }
 
     email!: string;
     name!: string;
@@ -23,10 +26,10 @@ export class User extends A_Entity<NewUser, UserJSON> {
     }
 
 
-    @A_Feature.Define({
-        name: 'do',
-        invoke: false
-    })
+    // @A_Feature.Define({
+    //     name: 'do',
+    //     invoke: false
+    // })
     async do(scope: A_Scope) {
         console.log('Doing something with user:', this.name);
         
@@ -41,7 +44,7 @@ export class User extends A_Entity<NewUser, UserJSON> {
     fromNew(newEntity: NewUser): void {
         this.aseid = new ASEID({
             id: newEntity.id,
-            namespace: 'users1',
+            concept: 'users1',
             scope: 'users2',
             entity: 'user3'
         });

@@ -1,6 +1,6 @@
 import { IncomingMessage } from "http";
 import { A_Request } from "./A-Request.entity";
-import { A_TYPES__Entity_JSON } from "@adaas/a-concept";
+import { A_TYPES__Entity_Serialized } from "@adaas/a-concept";
 export type A_SERVER_TYPES__RequestConstructor = {
     /**
      * Should correspond to Response id
@@ -9,7 +9,7 @@ export type A_SERVER_TYPES__RequestConstructor = {
     request: IncomingMessage;
     scope: string;
 };
-export type A_SERVER_TYPES__RequestSerialized = {} & A_TYPES__Entity_JSON;
+export type A_SERVER_TYPES__RequestSerialized = {} & A_TYPES__Entity_Serialized;
 export type A_SERVER_TYPES__RequestMethods = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS' | 'HEAD' | 'CONNECT' | 'TRACE' | 'DEFAULT';
 export declare enum A_SERVER_TYPES__RequestEvent {
     Error = "error",

@@ -1,6 +1,3 @@
-import crypto from 'crypto';
-import { A_Context, A_Entity } from "@adaas/a-concept";
-import { ASEID } from "@adaas/a-utils";
 import { A_SERVER_TYPES__RequestMethods } from '../A-Request/A-Request.entity.types';
 
 
@@ -33,7 +30,10 @@ export class A_Route {
      * returns path only without query and hash
      */
     get path(): string {
-        return this.url.split('?')[0].split('#')[0];
+        const p =  this.url.split('?')[0].split('#')[0];
+
+        //  ensure that last char is not /
+        return p.endsWith('/') ? p.slice(0, -1) : p;
     }
 
 
