@@ -42,6 +42,7 @@ class A_HTTPChannel extends a_utils_1.A_Channel {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b;
             const { method, url, data, config } = params;
+            yield this.initialize;
             this._processing = true;
             const fullUrl = this.buildURL(url, config === null || config === void 0 ? void 0 : config.params);
             const requestScope = new a_concept_1.A_Scope({ name: `a-http-channel-request-scope-${method}-${url}-${Date.now()}` });

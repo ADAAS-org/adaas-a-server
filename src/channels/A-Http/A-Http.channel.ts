@@ -36,6 +36,8 @@ export class A_HTTPChannel extends A_Channel {
     ): Promise<A_HTTPChannel_RequestContext<T>> {
         const { method, url, data, config } = params;
 
+        await this.initialize;
+
         this._processing = true;
 
         const fullUrl = this.buildURL(url, config?.params);
