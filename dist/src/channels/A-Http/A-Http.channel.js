@@ -18,6 +18,12 @@ const A_ServerError_class_1 = require("../../components/A-ServerError/A-ServerEr
 const a_utils_1 = require("@adaas/a-utils");
 const A_Http_channel_error_1 = require("./A-Http.channel.error");
 class A_HTTPChannel extends a_utils_1.A_Channel {
+    connect() {
+        return __awaiter(this, void 0, void 0, function* () {
+            // keep it empty since HTTP channel does not require persistent connection
+            return;
+        });
+    }
     /**
      * Allows to send an HTTP request without expecting a response
      *

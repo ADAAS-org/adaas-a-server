@@ -13,6 +13,12 @@ export class A_HTTPChannel extends A_Channel {
 
     protected baseUrl?: string;
 
+
+    async connect(): Promise<void> {
+        // keep it empty since HTTP channel does not require persistent connection
+        return;
+    }
+
     /**
      * Allows to send an HTTP request without expecting a response
      * 

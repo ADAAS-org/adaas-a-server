@@ -3,6 +3,7 @@ import { A_Channel } from "@adaas/a-utils";
 import { A_SERVER_TYPES__HttpChannelRequestConfig, A_SERVER_TYPES__HttpChannelRequestParams, A_SERVER_TYPES__HttpChannelSendParams } from "./A-Http.channel.types";
 export declare class A_HTTPChannel extends A_Channel {
     protected baseUrl?: string;
+    connect(): Promise<void>;
     /**
      * Allows to send an HTTP request without expecting a response
      *
