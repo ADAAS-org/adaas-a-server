@@ -13,7 +13,7 @@ import { A_Config, A_Logger } from "@adaas/a-utils";
 
 export class A_ServerLogger extends A_Logger {
 
-    protected config!: A_Config<A_SERVER_TYPES__ServerLoggerEnvVariables>
+    protected declare config: A_Config<A_SERVER_TYPES__ServerLoggerEnvVariables>
 
 
     @A_Feature.Extend({
