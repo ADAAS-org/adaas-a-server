@@ -34,7 +34,6 @@ class A_CommandController extends a_concept_1.A_Component {
             }
             const command = new CommandConstructor(req.body);
             container.scope.register(command);
-            console.log(`1) Executing command: ${commandName}`);
             yield command.execute();
             const serialized = command.toJSON();
             return res.status(200).json(serialized);

@@ -2,12 +2,36 @@ import { A_Caller, A_Component, A_Entity, A_Feature, A_Inject, A_Scope, A_TYPES_
 import { A_TYPES__EntityFeatures } from "@adaas/a-concept/dist/src/global/A-Entity/A-Entity.constants";
 import { A_HTTPChannel } from "@adaas/a-server/channels/A-Http/A-Http.channel";
 import { A_EntityList } from "@adaas/a-server/entities/A_EntityList/A_EntityList.entity";
-import { A_Channel, A_Manifest } from "@adaas/a-utils";
+import { A_Manifest } from "@adaas/a-utils";
 
 
 
 
 export class A_EntityRepository extends A_Component {
+
+    @A_Feature.Extend({
+        name: A_TYPES__EntityFeatures.LOAD,
+        scope: {
+            include: [A_EntityList]
+        }
+    })
+    async list(
+        @A_Inject(A_HTTPChannel) channel: A_HTTPChannel,
+        @A_Inject(A_Caller) entity: A_EntityList,
+        @A_Inject(A_Scope) scope: A_Scope,
+    ) {
+        // Check if the scope has a manifest and if the entity is allowed to load
+        if (
+            scope.has(A_Manifest) && !scope.resolve(A_Manifest)
+                .isAllowed(entity.constructor, 'load')
+                .for(entity.constructor as A_TYPES__Entity_Constructor)
+        )
+            return;
+
+        const response = await channel.get(`/a-list/${entity.aseid.entity}`);
+
+        entity.fromJSON(response.data);
+    }
 
 
     @A_Feature.Extend({

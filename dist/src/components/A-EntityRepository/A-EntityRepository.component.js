@@ -25,6 +25,17 @@ const A_Http_channel_1 = require("../../channels/A-Http/A-Http.channel");
 const A_EntityList_entity_1 = require("../../entities/A_EntityList/A_EntityList.entity");
 const a_utils_1 = require("@adaas/a-utils");
 class A_EntityRepository extends a_concept_1.A_Component {
+    list(channel, entity, scope) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Check if the scope has a manifest and if the entity is allowed to load
+            if (scope.has(a_utils_1.A_Manifest) && !scope.resolve(a_utils_1.A_Manifest)
+                .isAllowed(entity.constructor, 'load')
+                .for(entity.constructor))
+                return;
+            const response = yield channel.get(`/a-list/${entity.aseid.entity}`);
+            entity.fromJSON(response.data);
+        });
+    }
     load(channel, entity, scope) {
         return __awaiter(this, void 0, void 0, function* () {
             // Check if the scope has a manifest and if the entity is allowed to load
@@ -60,6 +71,17 @@ class A_EntityRepository extends a_concept_1.A_Component {
     }
 }
 exports.A_EntityRepository = A_EntityRepository;
+__decorate([
+    a_concept_1.A_Feature.Extend({
+        name: A_Entity_constants_1.A_TYPES__EntityFeatures.LOAD,
+        scope: {
+            include: [A_EntityList_entity_1.A_EntityList]
+        }
+    }),
+    __param(0, (0, a_concept_1.A_Inject)(A_Http_channel_1.A_HTTPChannel)),
+    __param(1, (0, a_concept_1.A_Inject)(a_concept_1.A_Caller)),
+    __param(2, (0, a_concept_1.A_Inject)(a_concept_1.A_Scope))
+], A_EntityRepository.prototype, "list", null);
 __decorate([
     a_concept_1.A_Feature.Extend({
         name: A_Entity_constants_1.A_TYPES__EntityFeatures.LOAD,

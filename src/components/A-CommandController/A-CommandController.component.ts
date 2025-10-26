@@ -33,8 +33,6 @@ export class A_CommandController extends A_Component {
 
         container.scope.register(command);
 
-        console.log(`1) Executing command: ${commandName}`);
-
         await command.execute();
 
         const serialized = command.toJSON();

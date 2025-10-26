@@ -25,10 +25,36 @@ const A_Router_component_1 = require("../A-Router/A-Router.component");
 const A_EntityFactory_context_1 = require("../../context/A-EntityFactory/A-EntityFactory.context");
 const A_Response_entity_1 = require("../../entities/A-Response/A-Response.entity");
 const A_ServerError_class_1 = require("../A-ServerError/A-ServerError.class");
+const a_utils_1 = require("@adaas/a-utils");
+const A_ListQueryFilter_context_1 = require("../../context/A-ListQueryFilter/A_ListQueryFilter.context");
+const A_EntityList_entity_1 = require("../../entities/A_EntityList/A_EntityList.entity");
 class A_EntityController extends a_concept_1.A_Component {
     // =======================================================
     // ================ Method Definition=====================
     // =======================================================
+    list(request, response, factory, scope, config) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const constructor = factory.resolveByName(request.params.type);
+            if (constructor) {
+                const entityList = new A_EntityList_entity_1.A_EntityList({
+                    name: request.params.type,
+                    scope: scope.name,
+                    constructor
+                });
+                scope.register(entityList);
+                const queryFilter = new A_ListQueryFilter_context_1.A_ListQueryFilter(request.query, {
+                    itemsPerPage: String(config.get('A_LIST_ITEMS_PER_PAGE') || '10'),
+                    page: String(config.get('A_LIST_PAGE') || '1')
+                });
+                const queryScope = new a_concept_1.A_Scope({
+                    fragments: [queryFilter]
+                }).inherit(scope);
+                yield entityList.load(queryScope);
+                response.add('items', entityList.items);
+                response.add('pagination', entityList.pagination);
+            }
+        });
+    }
     load(request, response, scope) {
         return __awaiter(this, void 0, void 0, function* () {
             // Check if the scope has a manifest and if the entity is allowed to save
@@ -128,6 +154,18 @@ class A_EntityController extends a_concept_1.A_Component {
     }
 }
 exports.A_EntityController = A_EntityController;
+__decorate([
+    A_Router_component_1.A_Router.Get({
+        path: '/:type',
+        version: 'v1',
+        prefix: 'a-list'
+    }),
+    __param(0, (0, a_concept_1.A_Inject)(A_Request_entity_1.A_Request)),
+    __param(1, (0, a_concept_1.A_Inject)(A_Response_entity_1.A_Response)),
+    __param(2, (0, a_concept_1.A_Inject)(A_EntityFactory_context_1.A_EntityFactory)),
+    __param(3, (0, a_concept_1.A_Inject)(a_concept_1.A_Scope)),
+    __param(4, (0, a_concept_1.A_Inject)(a_utils_1.A_Config))
+], A_EntityController.prototype, "list", null);
 __decorate([
     a_concept_1.A_Feature.Define({
         name: 'getEntity',
