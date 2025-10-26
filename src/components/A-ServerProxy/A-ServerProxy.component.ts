@@ -4,9 +4,7 @@ import { A_ProxyConfig } from "@adaas/a-server/context/A-ProxyConfig/A_ProxyConf
 import { A_Request } from "@adaas/a-server/entities/A-Request/A-Request.entity";
 import { A_Response } from "@adaas/a-server/entities/A-Response/A-Response.entity";
 import { A_Route } from "@adaas/a-server/entities/A-Route/A-Route.entity";
-import { A_Logger } from "@adaas/a-utils";
-import http from "http";
-import https from "https";
+import { A_Logger, A_Polyfill } from "@adaas/a-utils";
 
 
 export class A_ServerProxy extends A_Component {
@@ -25,7 +23,7 @@ export class A_ServerProxy extends A_Component {
     }
 
 
-    
+
     @A_Feature.Extend({
         name: A_SERVER_TYPES__ServerFeature.onRequest,
     })
@@ -33,9 +31,10 @@ export class A_ServerProxy extends A_Component {
         @A_Inject(A_Request) req: A_Request,
         @A_Inject(A_Response) res: A_Response,
         @A_Inject(A_ProxyConfig) proxyConfig: A_ProxyConfig,
-        @A_Inject(A_Logger) logger: A_Logger
+        @A_Inject(A_Logger) logger: A_Logger,
+        @A_Inject(A_Polyfill) polyfill: A_Polyfill
     ) {
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
             const { method, url } = req;
 
             const route = new A_Route(url, method);
@@ -51,7 +50,9 @@ export class A_ServerProxy extends A_Component {
                 config
             );
 
-            const client = config.protocol === "https:" ? https : http;
+            const client = await (config.protocol === "https:"
+                ? polyfill.https()
+                : polyfill.http());
 
             const proxyReq = client.request(
                 {

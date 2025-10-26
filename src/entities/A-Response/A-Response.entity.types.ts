@@ -1,5 +1,5 @@
 import { A_TYPES__Entity_Serialized } from "@adaas/a-concept";
-import { ServerResponse } from "http";
+import type { ServerResponse } from "http";
 
 
 export type A_SERVER_TYPES__ResponseConstructor = {

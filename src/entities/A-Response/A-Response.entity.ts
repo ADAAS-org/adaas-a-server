@@ -5,7 +5,7 @@ import {
     A_Scope,
     ASEID,
 } from "@adaas/a-concept";
-import {
+import type {
     IncomingHttpHeaders,
     ServerResponse
 } from "http";

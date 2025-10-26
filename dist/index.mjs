@@ -1,8 +1,6 @@
-import { A_Concept, A_Feature, A_Inject, A_Scope, A_Container, A_Caller, A_Error, A_Entity, ASEID, A_Context, A_IdentityHelper, A_Fragment, A_Component, A_Feature_Define, A_Feature_Extend, A_TypeGuards } from '@adaas/a-concept';
-import { A_Config, A_Logger, A_Channel, A_Manifest } from '@adaas/a-utils';
-import http, { createServer } from 'http';
+import { A_Concept, A_Inject, A_Feature, A_Scope, A_Container, A_Caller, A_Error, A_Entity, ASEID, A_Context, A_IdentityHelper, A_Fragment, A_Component, A_Feature_Define, A_Feature_Extend, A_TypeGuards } from '@adaas/a-concept';
+import { A_Polyfill, A_Config, A_Logger, A_Channel, A_Manifest } from '@adaas/a-utils';
 import crypto from 'crypto';
-import https from 'https';
 import fs from 'fs';
 import path from 'path';
 import { URL as URL$1 } from 'url';
@@ -606,7 +604,7 @@ var A_Response = class extends A_Entity {
   }
 };
 var A_Service = class extends A_Container {
-  async load() {
+  async load(polyfill) {
     let config;
     if (!this.scope.has(A_Config)) {
       const config2 = new A_Config({
@@ -626,7 +624,8 @@ var A_Service = class extends A_Container {
       });
     }
     this.port = config.get("A_SERVER_PORT");
-    this.server = createServer(this.onRequest.bind(this));
+    const http = await polyfill.http();
+    this.server = http.createServer(this.onRequest.bind(this));
   }
   listen() {
     return new Promise((resolve, reject) => {
@@ -708,7 +707,8 @@ var A_Service = class extends A_Container {
   }
 };
 __decorateClass([
-  A_Concept.Load()
+  A_Concept.Load(),
+  __decorateParam(0, A_Inject(A_Polyfill))
 ], A_Service.prototype, "load");
 __decorateClass([
   A_Concept.Start()
@@ -1513,8 +1513,8 @@ var A_ServerProxy = class extends A_Component {
       config.configs.map((c) => c.route).join("\n")
     );
   }
-  async onRequest(req, res, proxyConfig, logger) {
-    return new Promise((resolve, reject) => {
+  async onRequest(req, res, proxyConfig, logger, polyfill) {
+    return new Promise(async (resolve, reject) => {
       const { method, url } = req;
       const route = new A_Route(url, method);
       const config = proxyConfig.config(route.toString());
@@ -1526,7 +1526,7 @@ var A_ServerProxy = class extends A_Component {
         `Proxying request ${method} ${url} to ${config.hostname}`,
         config
       );
-      const client = config.protocol === "https:" ? https : http;
+      const client = await (config.protocol === "https:" ? polyfill.https() : polyfill.http());
       const proxyReq = client.request(
         {
           method: config.route.method,
@@ -1563,7 +1563,8 @@ __decorateClass([
   __decorateParam(0, A_Inject(A_Request)),
   __decorateParam(1, A_Inject(A_Response)),
   __decorateParam(2, A_Inject(A_ProxyConfig)),
-  __decorateParam(3, A_Inject(A_Logger))
+  __decorateParam(3, A_Inject(A_Logger)),
+  __decorateParam(4, A_Inject(A_Polyfill))
 ], A_ServerProxy.prototype, "onRequest");
 
 // src/components/A-ServerCORS/A_ServerCORS.component.defaults.ts

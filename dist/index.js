@@ -2,9 +2,7 @@
 
 var aConcept = require('@adaas/a-concept');
 var aUtils = require('@adaas/a-utils');
-var http = require('http');
 var crypto = require('crypto');
-var https = require('https');
 var fs = require('fs');
 var path = require('path');
 var url = require('url');
@@ -12,9 +10,7 @@ var AEntity_constants = require('@adaas/a-concept/dist/src/global/A-Entity/A-Ent
 
 function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
 
-var http__default = /*#__PURE__*/_interopDefault(http);
 var crypto__default = /*#__PURE__*/_interopDefault(crypto);
-var https__default = /*#__PURE__*/_interopDefault(https);
 var fs__default = /*#__PURE__*/_interopDefault(fs);
 var path__default = /*#__PURE__*/_interopDefault(path);
 
@@ -616,7 +612,7 @@ var A_Response = class extends aConcept.A_Entity {
   }
 };
 var A_Service = class extends aConcept.A_Container {
-  async load() {
+  async load(polyfill) {
     let config;
     if (!this.scope.has(aUtils.A_Config)) {
       const config2 = new aUtils.A_Config({
@@ -636,6 +632,7 @@ var A_Service = class extends aConcept.A_Container {
       });
     }
     this.port = config.get("A_SERVER_PORT");
+    const http = await polyfill.http();
     this.server = http.createServer(this.onRequest.bind(this));
   }
   listen() {
@@ -718,7 +715,8 @@ var A_Service = class extends aConcept.A_Container {
   }
 };
 __decorateClass([
-  aConcept.A_Concept.Load()
+  aConcept.A_Concept.Load(),
+  __decorateParam(0, aConcept.A_Inject(aUtils.A_Polyfill))
 ], A_Service.prototype, "load");
 __decorateClass([
   aConcept.A_Concept.Start()
@@ -1523,8 +1521,8 @@ var A_ServerProxy = class extends aConcept.A_Component {
       config.configs.map((c) => c.route).join("\n")
     );
   }
-  async onRequest(req, res, proxyConfig, logger) {
-    return new Promise((resolve, reject) => {
+  async onRequest(req, res, proxyConfig, logger, polyfill) {
+    return new Promise(async (resolve, reject) => {
       const { method, url } = req;
       const route = new A_Route(url, method);
       const config = proxyConfig.config(route.toString());
@@ -1536,7 +1534,7 @@ var A_ServerProxy = class extends aConcept.A_Component {
         `Proxying request ${method} ${url} to ${config.hostname}`,
         config
       );
-      const client = config.protocol === "https:" ? https__default.default : http__default.default;
+      const client = await (config.protocol === "https:" ? polyfill.https() : polyfill.http());
       const proxyReq = client.request(
         {
           method: config.route.method,
@@ -1573,7 +1571,8 @@ __decorateClass([
   __decorateParam(0, aConcept.A_Inject(A_Request)),
   __decorateParam(1, aConcept.A_Inject(A_Response)),
   __decorateParam(2, aConcept.A_Inject(A_ProxyConfig)),
-  __decorateParam(3, aConcept.A_Inject(aUtils.A_Logger))
+  __decorateParam(3, aConcept.A_Inject(aUtils.A_Logger)),
+  __decorateParam(4, aConcept.A_Inject(aUtils.A_Polyfill))
 ], A_ServerProxy.prototype, "onRequest");
 
 // src/components/A-ServerCORS/A_ServerCORS.component.defaults.ts

@@ -1,4 +1,4 @@
-import { IncomingHttpHeaders, IncomingMessage } from "http";
+import type { IncomingHttpHeaders, IncomingMessage } from "http";
 import { A_Context, A_Entity, A_IdentityHelper, ASEID, } from '@adaas/a-concept';
 import {
     A_SERVER_TYPES__RequestConstructor,

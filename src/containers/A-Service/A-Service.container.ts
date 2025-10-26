@@ -1,12 +1,12 @@
-import { createServer, IncomingMessage, Server, ServerResponse } from "http";
-import { A_SERVER_TYPES__ServerFeature, A_SERVER_TYPES__ServerFeatures } from "./A-Service.container.types";
+import type { IncomingMessage, Server, ServerResponse } from "http";
+import { A_SERVER_TYPES__ServerFeature } from "./A-Service.container.types";
 import { A_Server } from "@adaas/a-server/context/A-Server/A_Server.context";
 import { A_Request } from "@adaas/a-server/entities/A-Request/A-Request.entity";
 import { A_Response } from "@adaas/a-server/entities/A-Response/A-Response.entity";
 import crypto from 'crypto';
 import { A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES_ARRAY, A_TYPES__ServerENVVariables } from "@adaas/a-server/constants/env.constants";
-import { A_Concept, A_Container, A_Feature, A_IdentityHelper, A_Scope } from "@adaas/a-concept";
-import { A_Config, A_Logger } from "@adaas/a-utils";
+import { A_Concept, A_Container, A_Feature, A_IdentityHelper, A_Inject, A_Scope } from "@adaas/a-concept";
+import { A_Config, A_Logger, A_Polyfill } from "@adaas/a-utils";
 
 
 
@@ -22,7 +22,9 @@ export class A_Service extends A_Container {
     port!: number;
 
     @A_Concept.Load()
-    async load() {
+    async load(
+        @A_Inject(A_Polyfill) polyfill: A_Polyfill
+    ) {
 
         let config: A_Config<A_TYPES__ServerENVVariables>;
         let aServer: A_Server;
@@ -52,8 +54,10 @@ export class A_Service extends A_Container {
         // Set the server to listen on port 3000
         this.port = config.get('A_SERVER_PORT');
 
+        const http = await polyfill.http();
+
         // Create the HTTP server
-        this.server = createServer(this.onRequest.bind(this));
+        this.server = http.createServer(this.onRequest.bind(this));
 
     }
 
@@ -147,7 +151,7 @@ export class A_Service extends A_Container {
             await res.status(200).send();
 
         } catch (error) {
-            
+
             const logger = this.scope.resolve(A_Logger);
 
             logger.error(error);

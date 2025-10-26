@@ -1,5 +1,5 @@
 import { A_Component, A_Fragment, A_Error, A_TYPES__Entity_Serialized, A_TYPES__Error_Init, A_TYPES__Error_Serialized, A_Entity, A_Scope, A_Container, ASEID, A_TYPES__ComponentMeta } from '@adaas/a-concept';
-import { A_Channel, A_Logger, A_Config } from '@adaas/a-utils';
+import { A_Channel, A_Polyfill, A_Logger, A_Config } from '@adaas/a-utils';
 import * as http from 'http';
 import { IncomingMessage, IncomingHttpHeaders, ServerResponse } from 'http';
 import { A_TYPES__Required } from '@adaas/a-concept/dist/src/types/A_Common.types';
@@ -285,7 +285,7 @@ declare class A_Response<_ResponseType = any> extends A_Entity<A_SERVER_TYPES__R
 declare class A_Service extends A_Container {
     private server;
     port: number;
-    load(): Promise<void>;
+    load(polyfill: A_Polyfill): Promise<void>;
     protected listen(): Promise<void>;
     protected close(): Promise<void>;
     start(): Promise<void>;
@@ -679,7 +679,7 @@ declare class A_ServerHealthMonitor extends A_Component {
 
 declare class A_ServerProxy extends A_Component {
     load(logger: A_Logger, config: A_ProxyConfig): Promise<void>;
-    onRequest(req: A_Request, res: A_Response, proxyConfig: A_ProxyConfig, logger: A_Logger): Promise<void>;
+    onRequest(req: A_Request, res: A_Response, proxyConfig: A_ProxyConfig, logger: A_Logger, polyfill: A_Polyfill): Promise<void>;
 }
 
 declare class A_ServerCORS extends A_Component {

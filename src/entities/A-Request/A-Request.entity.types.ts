@@ -1,4 +1,4 @@
-import { IncomingMessage } from "http";
+import type { IncomingMessage } from "http";
 import { A_Request } from "./A-Request.entity";
 import { A_TYPES__Entity_Serialized } from "@adaas/a-concept";
 
