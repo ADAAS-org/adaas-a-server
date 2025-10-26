@@ -1,5 +1,5 @@
 import { A_Component, A_Fragment, A_Error, A_TYPES__Entity_Serialized, A_TYPES__Error_Init, A_TYPES__Error_Serialized, A_Entity, A_Scope, A_Container, ASEID, A_TYPES__ComponentMeta } from '@adaas/a-concept';
-import { A_Channel, A_Polyfill, A_Logger, A_Config } from '@adaas/a-utils';
+import { A_Channel, A_Logger, A_Config, A_Polyfill } from '@adaas/a-utils';
 import * as http from 'http';
 import { IncomingMessage, IncomingHttpHeaders, ServerResponse } from 'http';
 import { A_TYPES__Required } from '@adaas/a-concept/dist/src/types/A_Common.types';
@@ -285,7 +285,7 @@ declare class A_Response<_ResponseType = any> extends A_Entity<A_SERVER_TYPES__R
 declare class A_Service extends A_Container {
     private server;
     port: number;
-    load(polyfill: A_Polyfill): Promise<void>;
+    load(): Promise<void>;
     protected listen(): Promise<void>;
     protected close(): Promise<void>;
     start(): Promise<void>;
@@ -299,7 +299,7 @@ declare class A_Service extends A_Container {
         req: A_Request;
         res: A_Response;
     }>;
-    protected generateRequestId(method: string, url: string): string;
+    protected generateRequestId(method: string, url: string): Promise<string>;
     beforeStop(): Promise<void>;
     afterStop(): Promise<void>;
 }
@@ -370,16 +370,100 @@ declare class A_ProxyConfig extends A_Fragment {
     config(path: string): A_SERVER_TYPES__RoutesConfig | undefined;
 }
 
+interface A_StaticAlias {
+    alias: string;
+    path: string;
+    directory: string;
+    enabled?: boolean;
+}
+interface A_StaticDirectoryConfig {
+    path: string;
+    directory: string;
+    alias?: string;
+}
 declare class A_StaticConfig extends A_Fragment {
     readonly directories: Array<string>;
+    private _aliases;
+    private _directoryConfigs;
     constructor(
     /**
      * Setup directories to serve static files from, comma separated
      */
-    directories?: string[]);
+    directories?: string[], 
     /**
-     * Checks if a given path is configured in the proxy
-     *
+     * Custom directory configurations with aliases
+     */
+    directoryConfigs?: A_StaticDirectoryConfig[]);
+    private initializeDefaultAliases;
+    private initializeCustomAliases;
+    /**
+     * Add a custom static file alias
+     * @param alias - The URL path alias (e.g., '/assets')
+     * @param directory - The local directory path
+     * @param path - Optional custom path (defaults to alias)
+     */
+    addAlias(alias: string, directory: string, path?: string): void;
+    /**
+     * Remove a static file alias
+     * @param aliasPath - The path of the alias to remove
+     */
+    removeAlias(aliasPath: string): boolean;
+    /**
+     * Enable or disable an alias
+     * @param aliasPath - The path of the alias
+     * @param enabled - Whether to enable or disable
+     */
+    setAliasEnabled(aliasPath: string, enabled: boolean): boolean;
+    /**
+     * Get all configured aliases
+     */
+    getAliases(): A_StaticAlias[];
+    /**
+     * Get enabled aliases only
+     */
+    getEnabledAliases(): A_StaticAlias[];
+    /**
+     * Find the best matching alias for a given request path
+     * @param requestPath - The request path to match
+     */
+    findMatchingAlias(requestPath: string): A_StaticAlias | null;
+    /**
+     * Check if an alias exists
+     * @param aliasPath - The path to check
+     */
+    hasAlias(aliasPath: string): boolean;
+    /**
+     * Get a specific alias by path
+     * @param aliasPath - The path of the alias
+     */
+    getAlias(aliasPath: string): A_StaticAlias | undefined;
+    /**
+     * Add multiple aliases at once
+     * @param aliases - Array of alias configurations
+     */
+    addAliases(aliases: A_StaticDirectoryConfig[]): void;
+    /**
+     * Clear all aliases
+     */
+    clearAliases(): void;
+    /**
+     * Update an existing alias
+     * @param aliasPath - The path of the alias to update
+     * @param updates - Partial updates to apply
+     */
+    updateAlias(aliasPath: string, updates: Partial<A_StaticAlias>): boolean;
+    /**
+     * Get statistics about configured aliases
+     */
+    getStats(): {
+        total: number;
+        enabled: number;
+        disabled: number;
+        directories: string[];
+    };
+    /**
+     * Checks if a given path is configured in the proxy (legacy method)
+     * @deprecated Use findMatchingAlias instead
      * @param path
      * @returns
      */
@@ -689,11 +773,43 @@ declare class A_ServerCORS extends A_Component {
 }
 
 declare class A_StaticLoader extends A_Component {
-    load(logger: A_Logger, config: A_StaticConfig): Promise<void>;
-    onRequest(req: A_Request, res: A_Response, logger: A_Logger, config: A_StaticConfig): Promise<void>;
+    private _fsPolyfill;
+    private _pathPolyfill;
+    load(logger: A_Logger, config: A_StaticConfig, polyfill: A_Polyfill): Promise<void>;
+    onRequest(req: A_Request, res: A_Response, logger: A_Logger, config: A_StaticConfig, polyfill: A_Polyfill): Promise<void>;
+    /**
+     * Add a custom static file alias through the config
+     * @param alias - The URL path alias (e.g., '/assets')
+     * @param directory - The local directory path
+     * @param path - Optional custom path (defaults to alias)
+     * @param config - Static config instance
+     * @param logger - Logger instance for logging
+     */
+    addAlias(alias: string, directory: string, config: A_StaticConfig, logger?: A_Logger, path?: string): void;
+    /**
+     * Remove a static file alias through the config
+     * @param aliasPath - The path of the alias to remove
+     * @param config - Static config instance
+     * @param logger - Logger instance for logging
+     */
+    removeAlias(aliasPath: string, config: A_StaticConfig, logger?: A_Logger): boolean;
+    /**
+     * Get all configured aliases from config
+     * @param config - Static config instance
+     */
+    getAliases(config: A_StaticConfig): A_StaticAlias[];
+    /**
+     * Enable or disable an alias
+     * @param aliasPath - The path of the alias
+     * @param enabled - Whether to enable or disable
+     * @param config - Static config instance
+     * @param logger - Logger instance for logging
+     */
+    setAliasEnabled(aliasPath: string, enabled: boolean, config: A_StaticConfig, logger?: A_Logger): boolean;
     protected getMimeType(ext: string): string;
-    protected safeFilePath(staticDir: string, reqUrl: string, host?: string): string;
-    protected serveFile(filePath: string, res: A_Response): Promise<void>;
+    protected safeFilePath(staticDir: string, reqUrl: string, host: string | undefined, pathPolyfill: any, fsPolyfill: any): string;
+    protected serveFile(filePath: string, res: A_Response, logger: A_Logger, fsPolyfill: any, pathPolyfill: any): Promise<void>;
+    protected getCacheControl(ext: string): string;
 }
 
 declare class A_Controller extends A_Component {

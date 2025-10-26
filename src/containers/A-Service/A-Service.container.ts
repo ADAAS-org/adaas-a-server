@@ -3,10 +3,10 @@ import { A_SERVER_TYPES__ServerFeature } from "./A-Service.container.types";
 import { A_Server } from "@adaas/a-server/context/A-Server/A_Server.context";
 import { A_Request } from "@adaas/a-server/entities/A-Request/A-Request.entity";
 import { A_Response } from "@adaas/a-server/entities/A-Response/A-Response.entity";
-import crypto from 'crypto';
 import { A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES_ARRAY, A_TYPES__ServerENVVariables } from "@adaas/a-server/constants/env.constants";
-import { A_Concept, A_Container, A_Feature, A_IdentityHelper, A_Inject, A_Scope } from "@adaas/a-concept";
-import { A_Config, A_Logger, A_Polyfill } from "@adaas/a-utils";
+import { A_Concept, A_Container, A_Error, A_Feature, A_IdentityHelper, A_Inject, A_Scope } from "@adaas/a-concept";
+import { A_Config, A_Logger, A_Polyfill, IcryptoInterface } from "@adaas/a-utils";
+import { A_ServerLogger } from "@adaas/a-server/components/A-ServerLogger/A_ServerLogger.component";
 
 
 
@@ -23,12 +23,23 @@ export class A_Service extends A_Container {
 
     @A_Concept.Load()
     async load(
-        @A_Inject(A_Polyfill) polyfill: A_Polyfill
     ) {
+        // Initialize Logger
+        let logger: A_ServerLogger;
+        if (!this.scope.has(A_ServerLogger))
+            this.scope.register(A_ServerLogger);
 
+        logger = this.scope.resolve(A_ServerLogger);
+
+        // Initialize Polyfill
+        let polyfill: A_Polyfill;
+        if (!this.scope.has(A_Polyfill))
+            this.scope.register(A_Polyfill);
+
+        polyfill = this.scope.resolve(A_Polyfill);
+
+        // Initialize Config
         let config: A_Config<A_TYPES__ServerENVVariables>;
-        let aServer: A_Server;
-
         if (!this.scope.has(A_Config<A_TYPES__ServerENVVariables>)) {
             const config = new A_Config<A_TYPES__ServerENVVariables>({
                 variables: [...Array.from(A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES_ARRAY)],
@@ -39,8 +50,9 @@ export class A_Service extends A_Container {
 
             this.scope.register(config);
         }
-
         config = this.scope.resolve(A_Config) as A_Config<A_TYPES__ServerENVVariables>;
+
+        let aServer: A_Server;
 
 
         if (!this.scope.has(A_Server)) {
@@ -168,9 +180,11 @@ export class A_Service extends A_Container {
     ): Promise<{ req: A_Request, res: A_Response }> {
 
         if (!request.method || !request.url)
-            throw new Error('Request method or url is missing');
+            throw new A_Error('Request method or url is missing');
 
-        const id = this.generateRequestId(request.method, request.url);
+
+
+        const id = await this.generateRequestId(request.method, request.url);
 
         const req = new A_Request({ id, request, scope: this.scope.name });
         const res = new A_Response({ id, response, scope: this.scope.name });
@@ -181,17 +195,19 @@ export class A_Service extends A_Container {
         return { req, res };
     }
 
-    protected generateRequestId(
+    protected async generateRequestId(
         method: string,
         url: string
-    ): string {
+    ): Promise<string> {
+        const crypto = await this.scope.resolve(A_Polyfill).crypto();
+
         // Use the current time, request URL, and a few other details to create a unique ID
-        const hash = crypto.createHash('sha256');
         const timeId = A_IdentityHelper.generateTimeId();
         const randomValue = Math.random().toString(); // Adds extra randomness
 
-        hash.update(`${timeId}-${method}-${url}-${randomValue}`);
-        return `${timeId}-${hash.digest('hex')}`;
+        const hash = await crypto.createTextHash(`${timeId}-${method}-${url}-${randomValue}`, 'sha256');
+
+        return `${timeId}-${hash}`;
     }
 
     @A_Feature.Define({ invoke: true })

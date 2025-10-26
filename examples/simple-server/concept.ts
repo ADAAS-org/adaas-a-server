@@ -100,7 +100,14 @@ import { A_Config, A_ConfigLoader, A_Polyfill, ConfigReader, ENVConfigReader, Fi
                 '/assets/.*': 'https://test.com',
                 '/style.css': 'https://test.com'
             }),
-            new A_StaticConfig(['docs'])
+            new A_StaticConfig(
+                ['./public', './assets'], // Simple directories
+                [ // Custom aliases
+                    { path: '/api-docs', directory: './docs', alias: '/documentation' },
+                    { path: '/assets', directory: './static/assets' },
+                    { path: '/uploads', directory: './user-uploads' }
+                ]
+            )
         ],
         entities: []
     });

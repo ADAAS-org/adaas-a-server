@@ -2,17 +2,7 @@
 
 var aConcept = require('@adaas/a-concept');
 var aUtils = require('@adaas/a-utils');
-var crypto = require('crypto');
-var fs = require('fs');
-var path = require('path');
-var url = require('url');
 var AEntity_constants = require('@adaas/a-concept/dist/src/global/A-Entity/A-Entity.constants');
-
-function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
-
-var crypto__default = /*#__PURE__*/_interopDefault(crypto);
-var fs__default = /*#__PURE__*/_interopDefault(fs);
-var path__default = /*#__PURE__*/_interopDefault(path);
 
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -268,13 +258,13 @@ var A_HTTPChannel = class extends aUtils.A_Channel {
       config
     });
   }
-  buildURL(path2 = "", params = {}) {
+  buildURL(path = "", params = {}) {
     if (!this.baseUrl)
       throw new A_HTTPChannelError(
         A_HTTPChannelError.HttpRequestError,
         "Base URL is not set for HTTP Channel"
       );
-    const url = new URL(`${this.baseUrl}${path2.startsWith("/") ? path2 : `/${path2}`}`);
+    const url = new URL(`${this.baseUrl}${path.startsWith("/") ? path : `/${path}`}`);
     Object.keys(params).forEach((key) => {
       if (params[key] !== void 0 && params[key] !== null) {
         url.searchParams.append(key, params[key]);
@@ -611,8 +601,148 @@ var A_Response = class extends aConcept.A_Entity {
     }, {});
   }
 };
+var A_ServerLogger = class extends aUtils.A_Logger {
+  async onRequestEnd(request, response) {
+    this.route({
+      method: request.method,
+      url: request.url,
+      status: response.statusCode,
+      responseTime: response.duration
+    });
+  }
+  async onRequestError(request) {
+  }
+  logStart(container) {
+    this.serverReady({
+      port: container.port,
+      app: {
+        name: container.name
+      }
+    });
+  }
+  logStop(server) {
+    this.log("red", `Server ${server.name} stopped`);
+  }
+  metrics() {
+  }
+  routes(routes) {
+    const time = this.getTime();
+    console.log(`\x1B[36m[${this.scope.name}] |${time}| Exposed Routes:
+${" ".repeat(this.scopeLength + 3)}|-------------------------------
+${routes.map((route) => `${" ".repeat(this.scopeLength + 3)}| [${route.method.toUpperCase()}]${" ".repeat(7 - route.method.length)} ${route.path}`).join("\n")}
+${" ".repeat(this.scopeLength + 3)}|-------------------------------\x1B[0m`);
+  }
+  /**
+   * Logs the route information based on status code
+   * 
+   * @param route 
+   */
+  route(route) {
+    switch (route.status) {
+      case 200:
+        this.log200(route);
+        break;
+      case 404:
+        this.log404(route);
+        break;
+      case 500:
+        this.log500(route);
+        break;
+      case 400:
+        this.log400(route);
+        break;
+      default:
+        this.logDefault(route);
+        break;
+    }
+  }
+  log200(route) {
+    if (this.config.get("SERVER_IGNORE_LOG_200"))
+      return;
+    console.log(`\x1B[32m[${this.scope.name}] |${this.getTime()}| ${route.status} | [${route.method.toUpperCase()}]${" ".repeat(7 - route.method.length)} ${route.url} | ${route.responseTime}ms\x1B[0m`);
+  }
+  log404(route) {
+    if (this.config.get("SERVER_IGNORE_LOG_404"))
+      return;
+    console.log(`\x1B[33m[${this.scope.name}] |${this.getTime()}| ${route.status} | [${route.method.toUpperCase()}]${" ".repeat(7 - route.method.length)} ${route.url} | ${route.responseTime}ms\x1B[0m`);
+  }
+  log500(route) {
+    if (this.config.get("SERVER_IGNORE_LOG_500"))
+      return;
+    console.log(`\x1B[31m[${this.scope.name}] |${this.getTime()}| ${route.status} | [${route.method.toUpperCase()}]${" ".repeat(7 - route.method.length)} ${route.url} | ${route.responseTime}ms\x1B[0m`);
+  }
+  log400(route) {
+    if (this.config.get("SERVER_IGNORE_LOG_400"))
+      return;
+    console.log(`\x1B[33m[${this.scope.name}] |${this.getTime()}| ${route.status} | [${route.method.toUpperCase()}]${" ".repeat(7 - route.method.length)} ${route.url} | ${route.responseTime}ms\x1B[0m`);
+  }
+  logDefault(route) {
+    if (this.config.get("SERVER_IGNORE_LOG_DEFAULT"))
+      return;
+    console.log(`\x1B[36m[${this.scope.name}] |${this.getTime()}| ${route.status} | [${route.method.toUpperCase()}]${" ".repeat(7 - route.method.length)} ${route.url} | ${route.responseTime}ms\x1B[0m`);
+  }
+  serverReady(params) {
+    const processId = process.pid;
+    console.log(`\x1B[36m[${this.scope.name}] |${this.getTime()}| Server Ready:
+${" ".repeat(this.scopeLength + 3)}|-------------------------------
+${" ".repeat(this.scopeLength + 3)}| ${params.app.name} v${params.app.version || "0.0.1"} is running on port ${params.port}
+${" ".repeat(this.scopeLength + 3)}| Process ID: ${processId}
+${" ".repeat(this.scopeLength + 3)}|-------------------------------
+${" ".repeat(this.scopeLength + 3)}| ==============================
+${" ".repeat(this.scopeLength + 3)}|          LISTENING...         
+${" ".repeat(this.scopeLength + 3)}| ==============================
+\x1B[0m`);
+  }
+  /**
+   * Displays a proxy routes 
+   * 
+   * @param params 
+   */
+  proxy(params) {
+    console.log(`\x1B[35m[${this.scope.name}] |${this.getTime()}| Proxy:
+${" ".repeat(this.scopeLength + 3)}| ${params.original} -> ${params.destination}
+${" ".repeat(this.scopeLength + 3)}|-------------------------------\x1B[0m`);
+  }
+};
+__decorateClass([
+  aConcept.A_Feature.Extend({
+    name: "finish" /* Finish */,
+    scope: [A_Response]
+  }),
+  __decorateParam(0, aConcept.A_Inject(A_Request)),
+  __decorateParam(1, aConcept.A_Inject(A_Response))
+], A_ServerLogger.prototype, "onRequestEnd");
+__decorateClass([
+  aConcept.A_Feature.Extend({
+    name: "error" /* Error */
+  }),
+  __decorateParam(0, aConcept.A_Inject(A_Request))
+], A_ServerLogger.prototype, "onRequestError");
+__decorateClass([
+  aConcept.A_Feature.Extend({
+    name: "afterStart" /* afterStart */,
+    scope: [A_Service]
+  }),
+  __decorateParam(0, aConcept.A_Inject(A_Service))
+], A_ServerLogger.prototype, "logStart");
+__decorateClass([
+  aConcept.A_Feature.Extend({
+    name: "afterStop" /* afterStop */,
+    scope: [A_Service]
+  }),
+  __decorateParam(0, aConcept.A_Inject(A_Server))
+], A_ServerLogger.prototype, "logStop");
+
+// src/containers/A-Service/A-Service.container.ts
 var A_Service = class extends aConcept.A_Container {
-  async load(polyfill) {
+  async load() {
+    if (!this.scope.has(A_ServerLogger))
+      this.scope.register(A_ServerLogger);
+    this.scope.resolve(A_ServerLogger);
+    let polyfill;
+    if (!this.scope.has(aUtils.A_Polyfill))
+      this.scope.register(aUtils.A_Polyfill);
+    polyfill = this.scope.resolve(aUtils.A_Polyfill);
     let config;
     if (!this.scope.has(aUtils.A_Config)) {
       const config2 = new aUtils.A_Config({
@@ -694,20 +824,20 @@ var A_Service = class extends aConcept.A_Container {
   }
   async convertToAServer(request, response) {
     if (!request.method || !request.url)
-      throw new Error("Request method or url is missing");
-    const id = this.generateRequestId(request.method, request.url);
+      throw new aConcept.A_Error("Request method or url is missing");
+    const id = await this.generateRequestId(request.method, request.url);
     const req = new A_Request({ id, request, scope: this.scope.name });
     const res = new A_Response({ id, response, scope: this.scope.name });
     await req.init();
     await res.init();
     return { req, res };
   }
-  generateRequestId(method, url) {
-    const hash = crypto__default.default.createHash("sha256");
+  async generateRequestId(method, url) {
+    const crypto = await this.scope.resolve(aUtils.A_Polyfill).crypto();
     const timeId = aConcept.A_IdentityHelper.generateTimeId();
     const randomValue = Math.random().toString();
-    hash.update(`${timeId}-${method}-${url}-${randomValue}`);
-    return `${timeId}-${hash.digest("hex")}`;
+    const hash = await crypto.createTextHash(`${timeId}-${method}-${url}-${randomValue}`, "sha256");
+    return `${timeId}-${hash}`;
   }
   async beforeStop() {
   }
@@ -715,8 +845,7 @@ var A_Service = class extends aConcept.A_Container {
   }
 };
 __decorateClass([
-  aConcept.A_Concept.Load(),
-  __decorateParam(0, aConcept.A_Inject(aUtils.A_Polyfill))
+  aConcept.A_Concept.Load()
 ], A_Service.prototype, "load");
 __decorateClass([
   aConcept.A_Concept.Start()
@@ -769,13 +898,13 @@ var PROXY_CONFIG_DEFAULTS = {
 var A_ProxyConfig = class extends aConcept.A_Fragment {
   constructor(configs = {}) {
     super();
-    this._configs = Object.entries(configs).map(([path2, config]) => {
+    this._configs = Object.entries(configs).map(([path, config]) => {
       const targetUrl = new URL(typeof config === "string" ? config : config.hostname || "");
       const port = targetUrl.port || (targetUrl.protocol === "https:" ? "443" : "80");
       const prepared = {
         ...PROXY_CONFIG_DEFAULTS,
         ...typeof config === "string" ? {
-          path: path2,
+          path,
           port: parseInt(port),
           protocol: targetUrl.protocol,
           hostname: targetUrl.hostname
@@ -803,8 +932,8 @@ var A_ProxyConfig = class extends aConcept.A_Fragment {
    * @param path 
    * @returns 
    */
-  has(path2) {
-    return this._configs.some((route) => route.route.toRegExp().test(path2));
+  has(path) {
+    return this._configs.some((route) => route.route.toRegExp().test(path));
   }
   /**
    * Returns the proxy configuration for a given path, if exists
@@ -812,26 +941,170 @@ var A_ProxyConfig = class extends aConcept.A_Fragment {
    * @param path 
    * @returns 
    */
-  config(path2) {
-    return this._configs.find((route) => route.route.toRegExp().test(path2));
+  config(path) {
+    return this._configs.find((route) => route.route.toRegExp().test(path));
   }
 };
 var A_StaticConfig = class extends aConcept.A_Fragment {
-  constructor(directories = []) {
+  constructor(directories = [], directoryConfigs = []) {
     super();
+    this._aliases = /* @__PURE__ */ new Map();
+    this._directoryConfigs = [];
     this.directories = directories;
+    this._directoryConfigs = directoryConfigs;
+    this.initializeDefaultAliases();
+    this.initializeCustomAliases();
+  }
+  initializeDefaultAliases() {
+    this.directories.forEach((dir, index) => {
+      const alias = {
+        alias: `/static${index > 0 ? index : ""}`,
+        path: `/static${index > 0 ? index : ""}`,
+        directory: dir,
+        enabled: true
+      };
+      this._aliases.set(alias.path, alias);
+    });
+  }
+  initializeCustomAliases() {
+    this._directoryConfigs.forEach((config) => {
+      const alias = {
+        alias: config.alias || config.path,
+        path: config.path,
+        directory: config.directory,
+        enabled: true
+      };
+      this._aliases.set(alias.path, alias);
+    });
   }
   /**
-   * Checks if a given path is configured in the proxy
-   * 
+   * Add a custom static file alias
+   * @param alias - The URL path alias (e.g., '/assets')
+   * @param directory - The local directory path
+   * @param path - Optional custom path (defaults to alias)
+   */
+  addAlias(alias, directory, path) {
+    const staticAlias = {
+      alias,
+      path: path || alias,
+      directory,
+      enabled: true
+    };
+    this._aliases.set(staticAlias.path, staticAlias);
+  }
+  /**
+   * Remove a static file alias
+   * @param aliasPath - The path of the alias to remove
+   */
+  removeAlias(aliasPath) {
+    return this._aliases.delete(aliasPath);
+  }
+  /**
+   * Enable or disable an alias
+   * @param aliasPath - The path of the alias
+   * @param enabled - Whether to enable or disable
+   */
+  setAliasEnabled(aliasPath, enabled) {
+    const alias = this._aliases.get(aliasPath);
+    if (alias) {
+      alias.enabled = enabled;
+      return true;
+    }
+    return false;
+  }
+  /**
+   * Get all configured aliases
+   */
+  getAliases() {
+    return Array.from(this._aliases.values());
+  }
+  /**
+   * Get enabled aliases only
+   */
+  getEnabledAliases() {
+    return Array.from(this._aliases.values()).filter((alias) => alias.enabled !== false);
+  }
+  /**
+   * Find the best matching alias for a given request path
+   * @param requestPath - The request path to match
+   */
+  findMatchingAlias(requestPath) {
+    let bestMatch = null;
+    let longestMatch = 0;
+    for (const alias of this.getEnabledAliases()) {
+      if (requestPath.startsWith(alias.path) && alias.path.length > longestMatch) {
+        bestMatch = alias;
+        longestMatch = alias.path.length;
+      }
+    }
+    return bestMatch;
+  }
+  /**
+   * Check if an alias exists
+   * @param aliasPath - The path to check
+   */
+  hasAlias(aliasPath) {
+    return this._aliases.has(aliasPath);
+  }
+  /**
+   * Get a specific alias by path
+   * @param aliasPath - The path of the alias
+   */
+  getAlias(aliasPath) {
+    return this._aliases.get(aliasPath);
+  }
+  /**
+   * Add multiple aliases at once
+   * @param aliases - Array of alias configurations
+   */
+  addAliases(aliases) {
+    aliases.forEach((config) => {
+      this.addAlias(config.alias || config.path, config.directory, config.path);
+    });
+  }
+  /**
+   * Clear all aliases
+   */
+  clearAliases() {
+    this._aliases.clear();
+  }
+  /**
+   * Update an existing alias
+   * @param aliasPath - The path of the alias to update
+   * @param updates - Partial updates to apply
+   */
+  updateAlias(aliasPath, updates) {
+    const alias = this._aliases.get(aliasPath);
+    if (alias) {
+      Object.assign(alias, updates);
+      return true;
+    }
+    return false;
+  }
+  /**
+   * Get statistics about configured aliases
+   */
+  getStats() {
+    const aliases = this.getAliases();
+    const enabled = aliases.filter((a) => a.enabled !== false);
+    const disabled = aliases.filter((a) => a.enabled === false);
+    const directories = [...new Set(aliases.map((a) => a.directory))];
+    return {
+      total: aliases.length,
+      enabled: enabled.length,
+      disabled: disabled.length,
+      directories
+    };
+  }
+  /**
+   * Checks if a given path is configured in the proxy (legacy method)
+   * @deprecated Use findMatchingAlias instead
    * @param path 
    * @returns 
    */
-  has(path2) {
-    const found = this.directories.find((dir) => {
-      return new RegExp(`^/${dir.startsWith("/") ? dir.slice(1) : dir}/?.*`).test(path2);
-    });
-    return !!found && found;
+  has(path) {
+    const alias = this.findMatchingAlias(path);
+    return alias ? alias.directory : false;
   }
 };
 var A_ListQueryFilter = class extends aConcept.A_Fragment {
@@ -1003,137 +1276,6 @@ var A_EntityList = class extends aConcept.A_Entity {
     };
   }
 };
-var A_ServerLogger = class extends aUtils.A_Logger {
-  async onRequestEnd(request, response) {
-    this.route({
-      method: request.method,
-      url: request.url,
-      status: response.statusCode,
-      responseTime: response.duration
-    });
-  }
-  async onRequestError(request) {
-  }
-  logStart(container) {
-    this.serverReady({
-      port: container.port,
-      app: {
-        name: container.name
-      }
-    });
-  }
-  logStop(server) {
-    this.log("red", `Server ${server.name} stopped`);
-  }
-  metrics() {
-  }
-  routes(routes) {
-    const time = this.getTime();
-    console.log(`\x1B[36m[${this.scope.name}] |${time}| Exposed Routes:
-${" ".repeat(this.scopeLength + 3)}|-------------------------------
-${routes.map((route) => `${" ".repeat(this.scopeLength + 3)}| [${route.method.toUpperCase()}]${" ".repeat(7 - route.method.length)} ${route.path}`).join("\n")}
-${" ".repeat(this.scopeLength + 3)}|-------------------------------\x1B[0m`);
-  }
-  /**
-   * Logs the route information based on status code
-   * 
-   * @param route 
-   */
-  route(route) {
-    switch (route.status) {
-      case 200:
-        this.log200(route);
-        break;
-      case 404:
-        this.log404(route);
-        break;
-      case 500:
-        this.log500(route);
-        break;
-      case 400:
-        this.log400(route);
-        break;
-      default:
-        this.logDefault(route);
-        break;
-    }
-  }
-  log200(route) {
-    if (this.config.get("SERVER_IGNORE_LOG_200"))
-      return;
-    console.log(`\x1B[32m[${this.scope.name}] |${this.getTime()}| ${route.status} | [${route.method.toUpperCase()}]${" ".repeat(7 - route.method.length)} ${route.url} | ${route.responseTime}ms\x1B[0m`);
-  }
-  log404(route) {
-    if (this.config.get("SERVER_IGNORE_LOG_404"))
-      return;
-    console.log(`\x1B[33m[${this.scope.name}] |${this.getTime()}| ${route.status} | [${route.method.toUpperCase()}]${" ".repeat(7 - route.method.length)} ${route.url} | ${route.responseTime}ms\x1B[0m`);
-  }
-  log500(route) {
-    if (this.config.get("SERVER_IGNORE_LOG_500"))
-      return;
-    console.log(`\x1B[31m[${this.scope.name}] |${this.getTime()}| ${route.status} | [${route.method.toUpperCase()}]${" ".repeat(7 - route.method.length)} ${route.url} | ${route.responseTime}ms\x1B[0m`);
-  }
-  log400(route) {
-    if (this.config.get("SERVER_IGNORE_LOG_400"))
-      return;
-    console.log(`\x1B[33m[${this.scope.name}] |${this.getTime()}| ${route.status} | [${route.method.toUpperCase()}]${" ".repeat(7 - route.method.length)} ${route.url} | ${route.responseTime}ms\x1B[0m`);
-  }
-  logDefault(route) {
-    if (this.config.get("SERVER_IGNORE_LOG_DEFAULT"))
-      return;
-    console.log(`\x1B[36m[${this.scope.name}] |${this.getTime()}| ${route.status} | [${route.method.toUpperCase()}]${" ".repeat(7 - route.method.length)} ${route.url} | ${route.responseTime}ms\x1B[0m`);
-  }
-  serverReady(params) {
-    const processId = process.pid;
-    console.log(`\x1B[36m[${this.scope.name}] |${this.getTime()}| Server Ready:
-${" ".repeat(this.scopeLength + 3)}|-------------------------------
-${" ".repeat(this.scopeLength + 3)}| ${params.app.name} v${params.app.version || "0.0.1"} is running on port ${params.port}
-${" ".repeat(this.scopeLength + 3)}| Process ID: ${processId}
-${" ".repeat(this.scopeLength + 3)}|-------------------------------
-${" ".repeat(this.scopeLength + 3)}| ==============================
-${" ".repeat(this.scopeLength + 3)}|          LISTENING...         
-${" ".repeat(this.scopeLength + 3)}| ==============================
-\x1B[0m`);
-  }
-  /**
-   * Displays a proxy routes 
-   * 
-   * @param params 
-   */
-  proxy(params) {
-    console.log(`\x1B[35m[${this.scope.name}] |${this.getTime()}| Proxy:
-${" ".repeat(this.scopeLength + 3)}| ${params.original} -> ${params.destination}
-${" ".repeat(this.scopeLength + 3)}|-------------------------------\x1B[0m`);
-  }
-};
-__decorateClass([
-  aConcept.A_Feature.Extend({
-    name: "finish" /* Finish */,
-    scope: [A_Response]
-  }),
-  __decorateParam(0, aConcept.A_Inject(A_Request)),
-  __decorateParam(1, aConcept.A_Inject(A_Response))
-], A_ServerLogger.prototype, "onRequestEnd");
-__decorateClass([
-  aConcept.A_Feature.Extend({
-    name: "error" /* Error */
-  }),
-  __decorateParam(0, aConcept.A_Inject(A_Request))
-], A_ServerLogger.prototype, "onRequestError");
-__decorateClass([
-  aConcept.A_Feature.Extend({
-    name: "afterStart" /* afterStart */,
-    scope: [A_Service]
-  }),
-  __decorateParam(0, aConcept.A_Inject(A_Service))
-], A_ServerLogger.prototype, "logStart");
-__decorateClass([
-  aConcept.A_Feature.Extend({
-    name: "afterStop" /* afterStop */,
-    scope: [A_Service]
-  }),
-  __decorateParam(0, aConcept.A_Inject(A_Server))
-], A_ServerLogger.prototype, "logStop");
 
 // src/components/A-Router/A-Router.component.types.ts
 var A_SERVER_TYPES__RouterMethod = /* @__PURE__ */ ((A_SERVER_TYPES__RouterMethod2) => {
@@ -1159,12 +1301,12 @@ var _A_Router = class _A_Router extends aConcept.A_Component {
    * @param path 
    * @returns 
    */
-  static Post(path2) {
+  static Post(path) {
     return this.defineRoute({
       method: "POST" /* POST */,
-      path: typeof path2 === "object" && "path" in path2 ? path2.path : path2,
-      version: typeof path2 === "object" && "version" in path2 && path2.version ? path2.version : "v1",
-      prefix: typeof path2 === "object" && "prefix" in path2 && path2.prefix ? path2.prefix : "api"
+      path: typeof path === "object" && "path" in path ? path.path : path,
+      version: typeof path === "object" && "version" in path && path.version ? path.version : "v1",
+      prefix: typeof path === "object" && "prefix" in path && path.prefix ? path.prefix : "api"
     });
   }
   /**
@@ -1173,12 +1315,12 @@ var _A_Router = class _A_Router extends aConcept.A_Component {
    * @param path 
    * @returns 
    */
-  static Get(path2) {
+  static Get(path) {
     return this.defineRoute({
       method: "GET" /* GET */,
-      path: typeof path2 === "object" && "path" in path2 ? path2.path : path2,
-      version: typeof path2 === "object" && "version" in path2 && path2.version ? path2.version : "v1",
-      prefix: typeof path2 === "object" && "prefix" in path2 && path2.prefix ? path2.prefix : "api"
+      path: typeof path === "object" && "path" in path ? path.path : path,
+      version: typeof path === "object" && "version" in path && path.version ? path.version : "v1",
+      prefix: typeof path === "object" && "prefix" in path && path.prefix ? path.prefix : "api"
     });
   }
   /**
@@ -1187,12 +1329,12 @@ var _A_Router = class _A_Router extends aConcept.A_Component {
    * @param path 
    * @returns 
    */
-  static Put(path2) {
+  static Put(path) {
     return this.defineRoute({
       method: "PUT" /* PUT */,
-      path: typeof path2 === "object" && "path" in path2 ? path2.path : path2,
-      version: typeof path2 === "object" && "version" in path2 && path2.version ? path2.version : "v1",
-      prefix: typeof path2 === "object" && "prefix" in path2 && path2.prefix ? path2.prefix : "api"
+      path: typeof path === "object" && "path" in path ? path.path : path,
+      version: typeof path === "object" && "version" in path && path.version ? path.version : "v1",
+      prefix: typeof path === "object" && "prefix" in path && path.prefix ? path.prefix : "api"
     });
   }
   /**
@@ -1201,12 +1343,12 @@ var _A_Router = class _A_Router extends aConcept.A_Component {
    * @param path 
    * @returns 
    */
-  static Delete(path2) {
+  static Delete(path) {
     return this.defineRoute({
       method: "DELETE" /* DELETE */,
-      path: typeof path2 === "object" && "path" in path2 ? path2.path : path2,
-      version: typeof path2 === "object" && "version" in path2 && path2.version ? path2.version : "v1",
-      prefix: typeof path2 === "object" && "prefix" in path2 && path2.prefix ? path2.prefix : "api"
+      path: typeof path === "object" && "path" in path ? path.path : path,
+      version: typeof path === "object" && "version" in path && path.version ? path.version : "v1",
+      prefix: typeof path === "object" && "prefix" in path && path.prefix ? path.prefix : "api"
     });
   }
   /**
@@ -1215,12 +1357,12 @@ var _A_Router = class _A_Router extends aConcept.A_Component {
    * @param path 
    * @returns 
    */
-  static Patch(path2) {
+  static Patch(path) {
     return this.defineRoute({
       method: "PATCH" /* PATCH */,
-      path: typeof path2 === "object" && "path" in path2 ? path2.path : path2,
-      version: typeof path2 === "object" && "version" in path2 && path2.version ? path2.version : "v1",
-      prefix: typeof path2 === "object" && "prefix" in path2 && path2.prefix ? path2.prefix : "api"
+      path: typeof path === "object" && "path" in path ? path.path : path,
+      version: typeof path === "object" && "version" in path && path.version ? path.version : "v1",
+      prefix: typeof path === "object" && "prefix" in path && path.prefix ? path.prefix : "api"
     });
   }
   /**
@@ -1229,12 +1371,12 @@ var _A_Router = class _A_Router extends aConcept.A_Component {
    * @param path 
    * @returns 
    */
-  static Default(path2) {
+  static Default(path) {
     return this.defineRoute({
       method: "DEFAULT" /* DEFAULT */,
-      path: typeof path2 === "object" && "path" in path2 ? path2.path : path2,
-      version: typeof path2 === "object" && "version" in path2 && path2.version ? path2.version : "v1",
-      prefix: typeof path2 === "object" && "prefix" in path2 && path2.prefix ? path2.prefix : "api"
+      path: typeof path === "object" && "path" in path ? path.path : path,
+      version: typeof path === "object" && "version" in path && path.version ? path.version : "v1",
+      prefix: typeof path === "object" && "prefix" in path && path.prefix ? path.prefix : "api"
     });
   }
   /**
@@ -1623,80 +1765,212 @@ __decorateClass([
   __decorateParam(1, aConcept.A_Inject(A_Response))
 ], A_ServerCORS.prototype, "apply");
 var A_StaticLoader = class extends aConcept.A_Component {
-  async load(logger, config) {
+  async load(logger, config, polyfill) {
+    this._fsPolyfill = await polyfill.fs();
+    this._pathPolyfill = await polyfill.path();
+    const aliases = config.getEnabledAliases();
     logger.log(
       "pink",
-      `Static directories configured:`,
-      config.directories.join("\n")
+      `Static aliases configured:`,
+      aliases.map((alias) => `${alias.alias} -> ${alias.directory}`).join("\n")
     );
   }
-  async onRequest(req, res, logger, config) {
+  async onRequest(req, res, logger, config, polyfill) {
     if (req.method !== "GET" && req.method !== "HEAD") {
       return;
     }
     const { method, url } = req;
     const route = new A_Route(url, method);
-    const staticDirConfig = config.has(route.path);
-    if (!staticDirConfig) {
+    const alias = config.findMatchingAlias(route.path);
+    if (!alias) {
       return;
     }
-    const staticDir = path__default.default.resolve(process.cwd(), staticDirConfig);
-    if (!fs__default.default.existsSync(staticDir) || !fs__default.default.statSync(staticDir).isDirectory()) {
-      logger.log("red", `Static directory ${staticDir} does not exist or is not a directory.`);
-      return;
+    try {
+      const fs = this._fsPolyfill || await polyfill.fs();
+      const path = this._pathPolyfill || await polyfill.path();
+      const staticDir = path.resolve(process.cwd(), alias.directory);
+      if (!fs.existsSync(staticDir)) {
+        logger.log("red", `Static directory ${staticDir} does not exist.`);
+        return;
+      }
+      const relativePath = route.path.replace(alias.path, "");
+      const safePath = this.safeFilePath(staticDir, relativePath, req.headers?.host, path, fs);
+      await this.serveFile(safePath, res, logger, fs, path);
+    } catch (error) {
+      logger.error(`Static file serving error: ${error.message}`);
+      res.writeHead(404, { "Content-Type": "text/plain" });
+      res.send("File not found");
     }
-    await this.serveFile(route.path.startsWith("/") ? route.path.slice(1) : route.path, res);
+  }
+  /**
+   * Add a custom static file alias through the config
+   * @param alias - The URL path alias (e.g., '/assets')
+   * @param directory - The local directory path
+   * @param path - Optional custom path (defaults to alias)
+   * @param config - Static config instance
+   * @param logger - Logger instance for logging
+   */
+  addAlias(alias, directory, config, logger, path) {
+    config.addAlias(alias, directory, path);
+    if (logger) {
+      logger.log("cyan", `Static alias added: ${alias} -> ${directory}`);
+    }
+  }
+  /**
+   * Remove a static file alias through the config
+   * @param aliasPath - The path of the alias to remove
+   * @param config - Static config instance
+   * @param logger - Logger instance for logging
+   */
+  removeAlias(aliasPath, config, logger) {
+    const removed = config.removeAlias(aliasPath);
+    if (removed && logger) {
+      logger.log("yellow", `Static alias removed: ${aliasPath}`);
+    }
+    return removed;
+  }
+  /**
+   * Get all configured aliases from config
+   * @param config - Static config instance
+   */
+  getAliases(config) {
+    return config.getAliases();
+  }
+  /**
+   * Enable or disable an alias
+   * @param aliasPath - The path of the alias
+   * @param enabled - Whether to enable or disable
+   * @param config - Static config instance
+   * @param logger - Logger instance for logging
+   */
+  setAliasEnabled(aliasPath, enabled, config, logger) {
+    const result = config.setAliasEnabled(aliasPath, enabled);
+    if (result && logger) {
+      logger.log("blue", `Static alias ${enabled ? "enabled" : "disabled"}: ${aliasPath}`);
+    }
+    return result;
   }
   getMimeType(ext) {
     const mimeTypes = {
+      // Text
       ".html": "text/html",
-      ".js": "application/javascript",
+      ".htm": "text/html",
       ".css": "text/css",
+      ".txt": "text/plain",
+      ".md": "text/markdown",
+      ".xml": "application/xml",
+      // JavaScript
+      ".js": "application/javascript",
+      ".mjs": "application/javascript",
+      ".jsx": "application/javascript",
+      ".ts": "application/typescript",
+      ".tsx": "application/typescript",
+      // JSON
       ".json": "application/json",
+      ".jsonld": "application/ld+json",
+      // Images
       ".png": "image/png",
       ".jpg": "image/jpeg",
       ".jpeg": "image/jpeg",
       ".gif": "image/gif",
       ".svg": "image/svg+xml",
       ".ico": "image/x-icon",
-      ".txt": "text/plain"
+      ".webp": "image/webp",
+      ".bmp": "image/bmp",
+      ".tiff": "image/tiff",
+      // Fonts
+      ".woff": "font/woff",
+      ".woff2": "font/woff2",
+      ".ttf": "font/ttf",
+      ".otf": "font/otf",
+      ".eot": "application/vnd.ms-fontobject",
+      // Audio/Video
+      ".mp3": "audio/mpeg",
+      ".wav": "audio/wav",
+      ".mp4": "video/mp4",
+      ".webm": "video/webm",
+      ".ogg": "application/ogg",
+      // Archives
+      ".zip": "application/zip",
+      ".tar": "application/x-tar",
+      ".gz": "application/gzip",
+      // Documents
+      ".pdf": "application/pdf",
+      ".doc": "application/msword",
+      ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ".xls": "application/vnd.ms-excel",
+      ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     };
     return mimeTypes[ext.toLowerCase()] || "application/octet-stream";
   }
-  safeFilePath(staticDir, reqUrl, host) {
-    const parsedUrl = new url.URL(reqUrl || "/", `http://${host || "localhost"}`);
+  safeFilePath(staticDir, reqUrl, host = "localhost", pathPolyfill, fsPolyfill) {
+    const parsedUrl = new URL(reqUrl || "/", `http://${host}`);
     let pathname = decodeURIComponent(parsedUrl.pathname);
     pathname = pathname.replace(/\.\.[\/\\]/g, "");
-    let filePath = path__default.default.join(staticDir, pathname);
-    if (!fs__default.default.existsSync(filePath))
+    let filePath = pathPolyfill.join(staticDir, pathname);
+    if (!fsPolyfill.existsSync(filePath)) {
       throw new Error(`File not found: ${filePath}`);
+    }
     return filePath;
   }
-  serveFile(filePath, res) {
+  serveFile(filePath, res, logger, fsPolyfill, pathPolyfill) {
     return new Promise((resolve, reject) => {
-      if (fs__default.default.existsSync(filePath)) {
-        const ext = path__default.default.extname(filePath);
-        const contentType = this.getMimeType(ext);
-        res.writeHead(200, { "Content-Type": contentType });
-        const stream = fs__default.default.createReadStream(filePath);
-        stream.pipe(res.original);
-        stream.on("end", () => {
-          resolve();
-        });
-        stream.on("error", (err) => {
-          reject(new Error(`File stream error: ${err.message}`));
-        });
-      } else {
-        reject(new Error(`File not found: ${filePath}`));
+      try {
+        if (fsPolyfill.existsSync(filePath)) {
+          const ext = pathPolyfill.extname(filePath);
+          const contentType = this.getMimeType(ext);
+          const headers = {
+            "Content-Type": contentType,
+            "Cache-Control": this.getCacheControl(ext),
+            "X-Content-Type-Options": "nosniff"
+          };
+          res.writeHead(200, headers);
+          const stream = fsPolyfill.createReadStream(filePath);
+          if (stream && res.original) {
+            stream.pipe(res.original);
+            stream.on("end", () => {
+              logger.log("green", `Successfully served: ${filePath}`);
+              resolve();
+            });
+            stream.on("error", (err) => {
+              logger.error(`File stream error: ${err.message}`);
+              reject(new Error(`File stream error: ${err.message}`));
+            });
+          } else {
+            res.writeHead(500, { "Content-Type": "text/plain" });
+            res.send("Internal server error");
+            reject(new Error("Failed to create file stream"));
+          }
+        } else {
+          res.writeHead(404, { "Content-Type": "text/plain" });
+          res.send("File not found");
+          reject(new Error(`File not found: ${filePath}`));
+        }
+      } catch (error) {
+        logger.error(`Error serving file: ${error.message}`);
+        res.writeHead(500, { "Content-Type": "text/plain" });
+        res.send("Internal server error");
+        reject(error);
       }
-      resolve();
     });
+  }
+  getCacheControl(ext) {
+    const staticAssets = [".css", ".js", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico", ".woff", ".woff2", ".ttf", ".otf"];
+    const dynamicContent = [".html", ".htm"];
+    if (staticAssets.includes(ext.toLowerCase())) {
+      return "public, max-age=31536000";
+    } else if (dynamicContent.includes(ext.toLowerCase())) {
+      return "public, max-age=3600";
+    } else {
+      return "public, max-age=86400";
+    }
   }
 };
 __decorateClass([
   aConcept.A_Concept.Load(),
   __decorateParam(0, aConcept.A_Inject(aUtils.A_Logger)),
-  __decorateParam(1, aConcept.A_Inject(A_StaticConfig))
+  __decorateParam(1, aConcept.A_Inject(A_StaticConfig)),
+  __decorateParam(2, aConcept.A_Inject(aUtils.A_Polyfill))
 ], A_StaticLoader.prototype, "load");
 __decorateClass([
   aConcept.A_Feature.Extend({
@@ -1705,7 +1979,8 @@ __decorateClass([
   __decorateParam(0, aConcept.A_Inject(A_Request)),
   __decorateParam(1, aConcept.A_Inject(A_Response)),
   __decorateParam(2, aConcept.A_Inject(aUtils.A_Logger)),
-  __decorateParam(3, aConcept.A_Inject(A_StaticConfig))
+  __decorateParam(3, aConcept.A_Inject(A_StaticConfig)),
+  __decorateParam(4, aConcept.A_Inject(aUtils.A_Polyfill))
 ], A_StaticLoader.prototype, "onRequest");
 var A_Controller = class extends aConcept.A_Component {
   async callEntityMethod(request, response, scope) {
