@@ -1,21 +1,277 @@
 {
   "name": "@adaas/a-server",
   "version": "0.0.22",
-  "description": "SDK to create a server with ease. Build your backend server with modular structure and use it within or outside the ADAAS ecosystem.",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "description": "A-Server is a powerful server framework designed to work seamlessly with the A-Concept framework. This library provides a robust and flexible server implementation of A-Server, enabling developers to create scalable and efficient server-side applications using the A-Concept architecture.",
+  "keywords": [
+    "adaas",
+    "a-server",
+    "a-concept",
+    "server",
+    "framework",
+    "node",
+    "http",
+    "ai"
+  ],
+  "license": "Apache-2.0",
+  "author": {
+    "name": "ADAAS YAZILIM LİMİTED ŞİRKETİ",
+    "email": "contact-us@adaas.org"
+  },
+  "homepage": "https://github.com/ADAAS-org/adaas-a-server#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ADAAS-org/adaas-a-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ADAAS-org/adaas-a-server/issues"
+  },
+  "exports": {
+    ".": {
+      "browser": {
+        "types": "./dist/browser/index.d.mts",
+        "import": "./dist/browser/index.mjs"
+      },
+      "node": {
+        "types": "./dist/node/index.d.ts",
+        "import": "./dist/node/index.mjs",
+        "require": "./dist/node/index.js"
+      },
+      "default": {
+        "types": "./dist/node/index.d.ts",
+        "import": "./dist/node/index.mjs",
+        "require": "./dist/node/index.js"
+      }
+    },
+    "./channels/*": {
+      "node": {
+        "types": "./dist/node/channels/*.d.ts",
+        "import": "./dist/node/channels/*.mjs",
+        "require": "./dist/node/channels/*.js"
+      },
+      "default": {
+        "types": "./dist/node/channels/*.d.ts",
+        "import": "./dist/node/channels/*.mjs",
+        "require": "./dist/node/channels/*.js"
+      }
+    },
+    "./constants/*": {
+      "node": {
+        "types": "./dist/node/constants/*.d.ts",
+        "import": "./dist/node/constants/*.mjs",
+        "require": "./dist/node/constants/*.js"
+      },
+      "default": {
+        "types": "./dist/node/constants/*.d.ts",
+        "import": "./dist/node/constants/*.mjs",
+        "require": "./dist/node/constants/*.js"
+      }
+    },
+    "./controllers/*": {
+      "node": {
+        "types": "./dist/node/controllers/*.d.ts",
+        "import": "./dist/node/controllers/*.mjs",
+        "require": "./dist/node/controllers/*.js"
+      },
+      "default": {
+        "types": "./dist/node/controllers/*.d.ts",
+        "import": "./dist/node/controllers/*.mjs",
+        "require": "./dist/node/controllers/*.js"
+      }
+    },
+    "./helpers/*": {
+      "node": {
+        "types": "./dist/node/helpers/*.d.ts",
+        "import": "./dist/node/helpers/*.mjs",
+        "require": "./dist/node/helpers/*.js"
+      },
+      "default": {
+        "types": "./dist/node/helpers/*.d.ts",
+        "import": "./dist/node/helpers/*.mjs",
+        "require": "./dist/node/helpers/*.js"
+      }
+    },
+    "./middlewares/*": {
+      "node": {
+        "types": "./dist/node/middlewares/*.d.ts",
+        "import": "./dist/node/middlewares/*.mjs",
+        "require": "./dist/node/middlewares/*.js"
+      },
+      "default": {
+        "types": "./dist/node/middlewares/*.d.ts",
+        "import": "./dist/node/middlewares/*.mjs",
+        "require": "./dist/node/middlewares/*.js"
+      }
+    },
+    "./repositories/*": {
+      "node": {
+        "types": "./dist/node/repositories/*.d.ts",
+        "import": "./dist/node/repositories/*.mjs",
+        "require": "./dist/node/repositories/*.js"
+      },
+      "default": {
+        "types": "./dist/node/repositories/*.d.ts",
+        "import": "./dist/node/repositories/*.mjs",
+        "require": "./dist/node/repositories/*.js"
+      }
+    },
+    "./request/*": {
+      "node": {
+        "types": "./dist/node/lib/A-Request/*.d.ts",
+        "import": "./dist/node/lib/A-Request/*.mjs",
+        "require": "./dist/node/lib/A-Request/*.js"
+      },
+      "default": {
+        "types": "./dist/node/lib/A-Request/*.d.ts",
+        "import": "./dist/node/lib/A-Request/*.mjs",
+        "require": "./dist/node/lib/A-Request/*.js"
+      }
+    },
+    "./response/*": {
+      "node": {
+        "types": "./dist/node/lib/A-Response/*.d.ts",
+        "import": "./dist/node/lib/A-Response/*.mjs",
+        "require": "./dist/node/lib/A-Response/*.js"
+      },
+      "default": {
+        "types": "./dist/node/lib/A-Response/*.d.ts",
+        "import": "./dist/node/lib/A-Response/*.mjs",
+        "require": "./dist/node/lib/A-Response/*.js"
+      }
+    },
+    "./server/*": {
+      "node": {
+        "types": "./dist/node/lib/A-Server/*.d.ts",
+        "import": "./dist/node/lib/A-Server/*.mjs",
+        "require": "./dist/node/lib/A-Server/*.js"
+      },
+      "default": {
+        "types": "./dist/node/lib/A-Server/*.d.ts",
+        "import": "./dist/node/lib/A-Server/*.mjs",
+        "require": "./dist/node/lib/A-Server/*.js"
+      }
+    },
+    "./controller/*": {
+      "node": {
+        "types": "./dist/node/lib/A-ServerController/*.d.ts",
+        "import": "./dist/node/lib/A-ServerController/*.mjs",
+        "require": "./dist/node/lib/A-ServerController/*.js"
+      },
+      "default": {
+        "types": "./dist/node/lib/A-ServerController/*.d.ts",
+        "import": "./dist/node/lib/A-ServerController/*.mjs",
+        "require": "./dist/node/lib/A-ServerController/*.js"
+      }
+    },
+    "./entity-list/*": {
+      "node": {
+        "types": "./dist/node/lib/A-ServerEntityList/*.d.ts",
+        "import": "./dist/node/lib/A-ServerEntityList/*.mjs",
+        "require": "./dist/node/lib/A-ServerEntityList/*.js"
+      },
+      "default": {
+        "types": "./dist/node/lib/A-ServerEntityList/*.d.ts",
+        "import": "./dist/node/lib/A-ServerEntityList/*.mjs",
+        "require": "./dist/node/lib/A-ServerEntityList/*.js"
+      }
+    },
+    "./list-query/*": {
+      "node": {
+        "types": "./dist/node/lib/A-ServerListQuery/*.d.ts",
+        "import": "./dist/node/lib/A-ServerListQuery/*.mjs",
+        "require": "./dist/node/lib/A-ServerListQuery/*.js"
+      },
+      "default": {
+        "types": "./dist/node/lib/A-ServerListQuery/*.d.ts",
+        "import": "./dist/node/lib/A-ServerListQuery/*.mjs",
+        "require": "./dist/node/lib/A-ServerListQuery/*.js"
+      }
+    },
+    "./logger/*": {
+      "node": {
+        "types": "./dist/node/lib/A-ServerLogger/*.d.ts",
+        "import": "./dist/node/lib/A-ServerLogger/*.mjs",
+        "require": "./dist/node/lib/A-ServerLogger/*.js"
+      },
+      "default": {
+        "types": "./dist/node/lib/A-ServerLogger/*.d.ts",
+        "import": "./dist/node/lib/A-ServerLogger/*.mjs",
+        "require": "./dist/node/lib/A-ServerLogger/*.js"
+      }
+    },
+    "./middleware/*": {
+      "node": {
+        "types": "./dist/node/lib/A-ServerMiddleware/*.d.ts",
+        "import": "./dist/node/lib/A-ServerMiddleware/*.mjs",
+        "require": "./dist/node/lib/A-ServerMiddleware/*.js"
+      },
+      "default": {
+        "types": "./dist/node/lib/A-ServerMiddleware/*.d.ts",
+        "import": "./dist/node/lib/A-ServerMiddleware/*.mjs",
+        "require": "./dist/node/lib/A-ServerMiddleware/*.js"
+      }
+    },
+    "./proxy/*": {
+      "node": {
+        "types": "./dist/node/lib/A-ServerProxy/*.d.ts",
+        "import": "./dist/node/lib/A-ServerProxy/*.mjs",
+        "require": "./dist/node/lib/A-ServerProxy/*.js"
+      },
+      "default": {
+        "types": "./dist/node/lib/A-ServerProxy/*.d.ts",
+        "import": "./dist/node/lib/A-ServerProxy/*.mjs",
+        "require": "./dist/node/lib/A-ServerProxy/*.js"
+      }
+    },
+    "./route/*": {
+      "node": {
+        "types": "./dist/node/lib/A-ServerRoute/*.d.ts",
+        "import": "./dist/node/lib/A-ServerRoute/*.mjs",
+        "require": "./dist/node/lib/A-ServerRoute/*.js"
+      },
+      "default": {
+        "types": "./dist/node/lib/A-ServerRoute/*.d.ts",
+        "import": "./dist/node/lib/A-ServerRoute/*.mjs",
+        "require": "./dist/node/lib/A-ServerRoute/*.js"
+      }
+    },
+    "./router/*": {
+      "node": {
+        "types": "./dist/node/lib/A-ServerRouter/*.d.ts",
+        "import": "./dist/node/lib/A-ServerRouter/*.mjs",
+        "require": "./dist/node/lib/A-ServerRouter/*.js"
+      },
+      "default": {
+        "types": "./dist/node/lib/A-ServerRouter/*.d.ts",
+        "import": "./dist/node/lib/A-ServerRouter/*.mjs",
+        "require": "./dist/node/lib/A-ServerRouter/*.js"
+      }
+    },
+    "./static/*": {
+      "node": {
+        "types": "./dist/node/lib/A-ServerStatic/*.d.ts",
+        "import": "./dist/node/lib/A-ServerStatic/*.mjs",
+        "require": "./dist/node/lib/A-ServerStatic/*.js"
+      },
+      "default": {
+        "types": "./dist/node/lib/A-ServerStatic/*.d.ts",
+        "import": "./dist/node/lib/A-ServerStatic/*.mjs",
+        "require": "./dist/node/lib/A-ServerStatic/*.js"
+      }
+    }
+  },
   "sideEffects": false,
   "nodemonConfig": {
     "ignore": [
       "**/*.test.ts",
       "**/*.spec.ts",
       ".git",
-      "node_modules"
+      "node_modules",
+      "**/dist/**"
     ],
     "watch": [
       "examples",
-      "src"
+      "src",
+      "src_v2"
     ],
     "exec": "node -r tsconfig-paths/register -r ts-node/register ",
     "ext": "ts, js"
@@ -23,33 +279,19 @@
   "scripts": {
     "test": "jest",
     "example:simple-server": "nodemon ./examples/simple-server/concept.ts",
+    "example:fe-be": "nodemon ./examples/fe-be/concept.ts",
     "example:concept": "nodemon ./examples/concept-server/concept.ts",
     "test:test": "nodemon ./src/test/app.ts",
-    "publish": "npm run build && git add . && git commit -m \"new version created :: $(cat package.json | grep version | head -1  | awk -F: '{ print $2 }'  | sed 's/[\",]//g')\" && npm version patch && npm publish --access public",
+    "release": "npm run test && npm run build && git add . && git commit -m \"new version created :: $(cat package.json | grep version | head -1  | awk -F: '{ print $2 }'  | sed 's/[\",]//g')\" && npm version patch && npm publish --access public",
     "preversion": "echo test",
     "version": "echo git add .",
     "postversion": "git push --no-verify && git push --tags --no-verify && echo \"\n======Version Pushed Successfully=====\n\" ",
     "echo-version": "echo $npm_package_version",
     "build": "tsup --config tsup.config.ts"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ADAAS-org/adaas-a-server.git"
-  },
-  "keywords": [
-    "sdk",
-    "ai",
-    "rag"
-  ],
-  "author": "adaas.org",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/ADAAS-org/adaas-a-server/issues"
-  },
-  "homepage": "https://github.com/ADAAS-org/adaas-a-server#readme",
   "dependencies": {
-    "@adaas/a-concept": "^0.1.24",
-    "@adaas/a-utils": "^0.1.11"
+    "@adaas/a-concept": "^0.3.15",
+    "@adaas/a-utils": "^0.3.19"
   },
   "devDependencies": {
     "@types/chai": "^4.3.14",

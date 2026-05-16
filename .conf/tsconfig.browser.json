@@ -1,0 +1,32 @@
+{
+   "extends": "./tsconfig.base.json",
+   "compilerOptions": {
+      "rootDir": "../",
+      "outDir": "dist/browser",
+      "baseUrl": "../",
+
+      "paths": {
+         "@adaas/a-server/channels/*": ["src/channels/*"],
+         "@adaas/a-server/constants/*": ["src/constants/*"],
+         "@adaas/a-server/controllers/*": ["src/controllers/*"],
+         "@adaas/a-server/helpers/*": ["src/helpers/*"],
+         "@adaas/a-server/middlewares/*": ["src/middlewares/*"],
+         "@adaas/a-server/repositories/*": ["src/repositories/*"],
+
+
+         "@adaas/a-server/request/*": ["src/lib/A-Request/*"],
+         "@adaas/a-server/response/*": ["src/lib/A-Response/*"],
+         "@adaas/a-server/server/*": ["src/lib/A-Server/*"],
+         "@adaas/a-server/controller/*": ["src/lib/A-ServerController/*"],
+         "@adaas/a-server/entity-list/*": ["src/lib/A-ServerEntityList/*"],
+         "@adaas/a-server/list-query/*": ["src/lib/A-ServerListQuery/*"],
+         "@adaas/a-server/logger/*": ["src/lib/A-ServerLogger/*"],
+         "@adaas/a-server/middleware/*": ["src/lib/A-ServerMiddleware/*"],
+         "@adaas/a-server/proxy/*": ["src/lib/A-ServerProxy/*"],
+         "@adaas/a-server/route/*": ["src/lib/A-ServerRoute/*"],
+         "@adaas/a-server/router/*": ["src/lib/A-ServerRouter/*"],
+         "@adaas/a-server/static/*": ["src/lib/A-ServerStatic/*"],
+
+      },
+   },
+}

@@ -1,9 +1,10 @@
 import { A_Component, A_Feature, A_Inject } from "@adaas/a-concept";
-import { A_Router } from "@adaas/a-server/components/A-Router/A-Router.component";
-import { A_Request } from "@adaas/a-server/entities/A-Request/A-Request.entity";
-import { A_Response } from "@adaas/a-server/entities/A-Response/A-Response.entity";
-import { A_CONSTANTS_A_Command_Features, A_Logger } from "@adaas/a-utils";
+import { A_Request } from "src/lib/A-Request/A-Request.entity";
 import { SignInCommand } from "../commands/SignIn.command";
+import { A_Logger } from "@adaas/a-utils/a-logger";
+import { A_CommandFeatures } from "@adaas/a-utils/a-command";
+import { A_ServerRouter } from "@adaas/a-server/router/A-ServerRouter.component";
+import { A_Response } from "@adaas/a-server/response/A-Response.entity";
 
 
 export class TestController extends A_Component {
@@ -14,7 +15,7 @@ export class TestController extends A_Component {
     //     name: 'test',
     //     invoke: false,
     // })
-    @A_Router.Get({
+    @A_ServerRouter.Get({
         path: '/test',
         version: 'v1',
         prefix: 'test'
@@ -34,7 +35,7 @@ export class TestController extends A_Component {
     @A_Feature.Extend({
         name: 'test',
     })
-    @A_Router.Get('/test')
+    @A_ServerRouter.Get('/test')
     async test2(
         @A_Inject(A_Request) request: A_Request,
         @A_Inject(A_Response) response: A_Response,
@@ -50,7 +51,7 @@ export class TestController extends A_Component {
 
 
     @A_Feature.Extend({
-        name: A_CONSTANTS_A_Command_Features.EXECUTE,
+        name: A_CommandFeatures.onExecute,
         scope: [SignInCommand]
     })
     signIn() {

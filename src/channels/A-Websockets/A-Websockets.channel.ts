@@ -1,4 +1,4 @@
-import { A_Channel } from "@adaas/a-utils";
+import { A_Channel } from "@adaas/a-utils/a-channel";
 
 
 

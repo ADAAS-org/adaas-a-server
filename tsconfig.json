@@ -1,66 +1,56 @@
 {
-  "compileOnSave": false,
+  "extends": "./.conf/tsconfig.base.json",
+
   "compilerOptions": {
-    "outDir": "dist",
-    "strict": true,
-    "noImplicitAny": false,
-    "noFallthroughCasesInSwitch": true,
-    "downlevelIteration": true,
-    "strictFunctionTypes": true,
-    "strictNullChecks": true,
-    "strictPropertyInitialization": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "noErrorTruncation": true,
-    "jsx": "react",
-    "target": "es2020",
-    "module": "esnext",
-    "declaration": true,        
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "removeComments": false,
-    "preserveConstEnums": true,
-    "sourceMap": true,
+    "rootDir": "./",
     "baseUrl": ".",
-    "experimentalDecorators": true,
-    "skipLibCheck": true,
-    "typeRoots": [
-      "node_modules/@types"
-    ],
+    /* ===============================
+       Internal aliases (DEV ONLY)
+       =============================== */
     "paths": {
-      "@adaas/a-server/constants/*": ["src/constants/*"],
-      "@adaas/a-server/defaults/*": ["src/defaults/*"],
-      "@adaas/a-server/decorators/*": ["src/decorators/*"],
-      "@adaas/a-server/helpers/*": ["src/helpers/*"],
-      "@adaas/a-server/examples/*": ["src/examples/*"],
-      "@adaas/a-server/entities/*": ["src/entities/*"],
       "@adaas/a-server/channels/*": ["src/channels/*"],
+      "@adaas/a-server/constants/*": ["src/constants/*"],
+      "@adaas/a-server/controllers/*": ["src/controllers/*"],
+      "@adaas/a-server/helpers/*": ["src/helpers/*"],
+      "@adaas/a-server/middlewares/*": ["src/middlewares/*"],
+      "@adaas/a-server/repositories/*": ["src/repositories/*"],
 
 
-      "@adaas/a-server/context/*": ["src/context/*"],
-      "@adaas/a-server/components/*": ["src/components/*"],
-      "@adaas/a-server/containers/*": ["src/containers/*"]
+      "@adaas/a-server/request/*": ["src/lib/A-Request/*"],
+      "@adaas/a-server/response/*": ["src/lib/A-Response/*"],
+      "@adaas/a-server/server/*": ["src/lib/A-Server/*"],
+      "@adaas/a-server/controller/*": ["src/lib/A-ServerController/*"],
+      "@adaas/a-server/entity-list/*": ["src/lib/A-ServerEntityList/*"],
+      "@adaas/a-server/list-query/*": ["src/lib/A-ServerListQuery/*"],
+      "@adaas/a-server/logger/*": ["src/lib/A-ServerLogger/*"],
+      "@adaas/a-server/middleware/*": ["src/lib/A-ServerMiddleware/*"],
+      "@adaas/a-server/proxy/*": ["src/lib/A-ServerProxy/*"],
+      "@adaas/a-server/route/*": ["src/lib/A-ServerRoute/*"],
+      "@adaas/a-server/router/*": ["src/lib/A-ServerRouter/*"],
+      "@adaas/a-server/static/*": ["src/lib/A-ServerStatic/*"],
+
     },
-    "lib": [
-      "dom",
-      "esnext.asynciterable",
-      "es2015",
-      "es2016",
-      "es2017.object"
-    ]
+
+    /* ===============================
+       Types
+       =============================== */
+    "types": [
+      "node",
+      "jest",
+      "mocha",
+    ],
+    "typeRoots": ["node_modules/@types"]
   },
+
   "include": [
     "src/**/*",
-    "tests/**/*", 
-    "examples/**/*", 
-    "src/index.ts"  
+    "tests/**/*",
+    "examples/**/*.ts",
+    "src/index.ts"
   ],
+
   "exclude": [
-    "node_modules/**/*",
-    "dist/**/*",
-    "node_modules/@types/mocha/index.d.ts"
+    "node_modules",
+    "dist",
   ]
 }

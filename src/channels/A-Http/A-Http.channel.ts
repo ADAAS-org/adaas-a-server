@@ -1,171 +1,123 @@
-import { A_Context, A_Scope } from "@adaas/a-concept";
-import { A_SERVER_TYPES__ServerMethod } from "../../containers/A-Service/A-Service.container.types";
-import { A_HTTPChannel_RequestContext } from "../../context/A-HttpChannel/A-HttpChannel.context";
-import { A_SERVER_CONSTANTS__A_HttpChannel_Lifecycle } from "./A-Http.channel.constants";
-import { A_ServerError } from "@adaas/a-server/components/A-ServerError/A-ServerError.class";
-import { A_Channel } from "@adaas/a-utils";
+import { A_ServerError } from "@adaas/a-server/server/A-Server.error";
 import { A_HTTPChannelError } from "./A-Http.channel.error";
-import { A_SERVER_TYPES__HttpChannelRequestConfig, A_SERVER_TYPES__HttpChannelRequestParams, A_SERVER_TYPES__HttpChannelSendParams } from "./A-Http.channel.types";
-
+import { A_SERVER_TYPES__HttpChannelRequestConfig, A_SERVER_TYPES__HttpChannelRequestParams } from "./A-Http.channel.types";
+import { A_ServerRoute } from "@adaas/a-server/route/A-ServerRoute.entity";
+import { A_Channel, A_ChannelRequest } from '@adaas/a-utils/a-channel'
+import { A_Inject, A_Scope } from "@adaas/a-concept";
 
 
 export class A_HTTPChannel extends A_Channel {
 
     protected baseUrl?: string;
 
-
-    async connect(): Promise<void> {
-        // keep it empty since HTTP channel does not require persistent connection
-        return;
-    }
-
-    /**
-     * Allows to send an HTTP request without expecting a response
-     * 
-     * @param params 
-     */
-    async send(params: A_SERVER_TYPES__HttpChannelSendParams): Promise<void> {
-        this.request(params);
-    }
-
-    /**
-     * Makes an HTTP request
-     * 
-     * @param params 
-     * @returns 
-     */
-    async request<T = any, M extends Record<string, any> = any>(
-        /**
-         * Provide request parameters
-         */
-        params: A_SERVER_TYPES__HttpChannelRequestParams<M>
-    ): Promise<A_HTTPChannel_RequestContext<T>> {
-        const { method, url, data, config } = params;
-
-        await this.initialize;
-
-        this._processing = true;
+    async onBeforeRequest(
+        @A_Inject(A_ChannelRequest) context: A_ChannelRequest<A_SERVER_TYPES__HttpChannelRequestParams>,
+        @A_Inject(A_Scope) scope: A_Scope,
+    ): Promise<void> {
+        const { method, url, data, config } = context.params;
 
         const fullUrl = this.buildURL(url, config?.params);
 
-        const requestScope = new A_Scope({ name: `a-http-channel-request-scope-${method}-${url}-${Date.now()}` });
-        const context = new A_HTTPChannel_RequestContext({
-            method,
-            url,
-            data,
-            config
-        });
+        const route = new A_ServerRoute(fullUrl, method);
+        scope.register(route);
 
-        requestScope.inherit(A_Context.scope(this));
-        requestScope.register(context);
+        context.params.config = context.params.config || {};
 
-        try {
-            await this.call(A_SERVER_CONSTANTS__A_HttpChannel_Lifecycle.onBeforeRequest, requestScope);
+        context.params.config.headers = {
+            "Content-Type": "application/json",
+            ...config?.headers,
+        };
+    }
 
-            const headers: Record<string, string> = {
-                "Content-Type": "application/json",
-                ...config?.headers,
-            };
+    async onRequest(
+        @A_Inject(A_ChannelRequest) context: A_ChannelRequest<A_SERVER_TYPES__HttpChannelRequestParams>,
+        @A_Inject(A_ServerRoute) route: A_ServerRoute,
+    ): Promise<void> {
+        const options: RequestInit = {
+            method: route.method,
+            headers: context.params.config?.headers || {
+            },
+        };
 
-            const options: RequestInit = {
-                method,
-                headers,
-            };
+        if (context.params.data && route.method !== 'GET') {
+            options.body = JSON.stringify(context.params.data);
+        }
 
-            if (data && method !== A_SERVER_TYPES__ServerMethod.GET) {
-                options.body = JSON.stringify(data);
-            }
+        const response = await fetch(route.url, options);
 
-            const response = await fetch(fullUrl, options);
+        if (!response.ok) {
+            throw new A_ServerError({
+                status: response.status,
+                title: response.statusText,
+                description: `HTTP request to ${route.url} failed with status ${response.status}`,
+            });
+        }
 
-            if (!response.ok) {
-                throw new A_ServerError({
-                    status: response.status,
-                    title: response.statusText,
-                    description: `HTTP request to ${fullUrl} failed with status ${response.status}`,
+
+        switch (context.params.config?.params?.responseType) {
+            case "text":
+                context.succeed({
+                    data: await response.text()
                 });
-            }
-
-            context.result =
-                config?.params?.responseType === "text"
-                    ? await response.text()
-                    : config?.params?.responseType === "blob"
-                        ? await response.blob()
-                        : await response.json();
-
-            await this.call(A_SERVER_CONSTANTS__A_HttpChannel_Lifecycle.onAfterRequest, requestScope);
-
-            this._processing = false;
-
-            return context as A_HTTPChannel_RequestContext<T>;
-
-        } catch (error) {
-
-            this._processing = false;
-
-            context.error = error;
-
-            await this.call(A_SERVER_CONSTANTS__A_HttpChannel_Lifecycle.onError, requestScope);
-
-            if (config?.throwOnError === false)
-                return context as A_HTTPChannel_RequestContext<T>;
-            else
-                throw error;
+                break;
+            case "blob":
+                context.succeed(await response.blob());
+                break;
+            default:
+                context.succeed(await response.json());
+                break;
         }
     }
 
-    async post<T, M extends Record<string, any> = any>(
+
+    async post<T extends Record<string, any> = any, M extends Record<string, any> = any>(
         url: string,
         body?: any,
         config?: Partial<A_SERVER_TYPES__HttpChannelRequestConfig>,
-    ): Promise<A_HTTPChannel_RequestContext<T>> {
-        return this.request<T, M>(
-            {
-                method: A_SERVER_TYPES__ServerMethod.POST,
-                url,
-                data: body,
-                config,
-            }
-        );
-    }
-
-    async get<T, M extends Record<string, any> = any>(
-        url: string,
-        params?: any,
-        config?: Partial<A_SERVER_TYPES__HttpChannelRequestConfig>,
-    ): Promise<A_HTTPChannel_RequestContext<T>> {
-        return this.request<T, M>(
-            {
-                method: A_SERVER_TYPES__ServerMethod.GET,
-                url,
-                config: {
-                    ...config,
-                    params,
-                }
-            }
-        );
-    }
-
-    async put<T, M extends Record<string, any> = any>(
-        url: string,
-        body?: any,
-        config?: Partial<A_SERVER_TYPES__HttpChannelRequestConfig>,
-    ): Promise<A_HTTPChannel_RequestContext<T>> {
-        return this.request<T, M>({
-            method: A_SERVER_TYPES__ServerMethod.PUT,
+    ): Promise<A_ChannelRequest<A_SERVER_TYPES__HttpChannelRequestParams<M>, T>> {
+        return this.request<A_SERVER_TYPES__HttpChannelRequestParams<M>, T>({
+            method: 'POST',
             url,
             data: body,
             config,
         });
     }
 
-    async delete<T, M extends Record<string, any> = any>(
+    async get<T extends Record<string, any> = any, M extends Record<string, any> = any>(
         url: string,
         params?: any,
         config?: Partial<A_SERVER_TYPES__HttpChannelRequestConfig>,
-    ): Promise<A_HTTPChannel_RequestContext<T>> {
-        return this.request<T, M>({
-            method: A_SERVER_TYPES__ServerMethod.DELETE,
+    ): Promise<A_ChannelRequest<A_SERVER_TYPES__HttpChannelRequestParams<M>, T>> {
+        return this.request<A_SERVER_TYPES__HttpChannelRequestParams<M>, T>({
+            method: 'GET',
+            url,
+            config: {
+                ...config,
+                params,
+            }
+        });
+    }
+
+    async put<T extends Record<string, any> = any, M extends Record<string, any> = any>(
+        url: string,
+        body?: any,
+        config?: Partial<A_SERVER_TYPES__HttpChannelRequestConfig>,
+    ): Promise<A_ChannelRequest<A_SERVER_TYPES__HttpChannelRequestParams<M>, T>> {
+        return this.request<A_SERVER_TYPES__HttpChannelRequestParams<M>, T>({
+            method: 'PUT',
+            url,
+            data: body,
+            config,
+        });
+    }
+
+    async delete<T extends Record<string, any> = any, M extends Record<string, any> = any>(
+        url: string,
+        params?: any,
+        config?: Partial<A_SERVER_TYPES__HttpChannelRequestConfig>,
+    ): Promise<A_ChannelRequest<A_SERVER_TYPES__HttpChannelRequestParams<M>, T>> {
+        return this.request<A_SERVER_TYPES__HttpChannelRequestParams<M>, T>({
+            method: 'DELETE',
             url,
             data: params,
             config,
@@ -174,7 +126,6 @@ export class A_HTTPChannel extends A_Channel {
 
 
     protected buildURL(path: string = '', params: Record<string, any> = {}): string {
-
         if (!this.baseUrl)
             throw new A_HTTPChannelError(
                 A_HTTPChannelError.HttpRequestError,

@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../../../src/lib/A-Response/A-Response.error.ts"],"names":[],"mappings":";;;AAGO,MAAM,wBAAwB,OAAA,CAAQ;AAE7C","file":"A-Response.error.mjs","sourcesContent":["import { A_Error } from \"@adaas/a-concept\"\n\n\nexport class A_ResponseError extends A_Error {\n\n}"]}

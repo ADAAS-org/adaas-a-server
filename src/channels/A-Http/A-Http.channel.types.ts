@@ -1,10 +1,13 @@
-import { A_SERVER_TYPES__ServerMethod } from "@adaas/a-server/containers/A-Service/A-Service.container.types";
+import { A_HttpServerRequestMethod } from "@adaas/a-server/server/A-HttpServer.types";
+import { A_SERVER_CONSTANTS__A_HttpChannel_Lifecycle } from "./A-Http.channel.constants";
+
+export type A_SERVER_CONSTANTS__A_HttpChannel_LifecycleNames = typeof A_SERVER_CONSTANTS__A_HttpChannel_Lifecycle[keyof typeof A_SERVER_CONSTANTS__A_HttpChannel_Lifecycle];
 
 export type A_SERVER_TYPES__HttpChannelSendParams<M extends Record<string, any> = any> = {
     /**
      * HTTP Method
      */
-    method: A_SERVER_TYPES__ServerMethod,
+    method: A_HttpServerRequestMethod,
     /**
      * Request URL
      */
@@ -24,7 +27,7 @@ export type A_SERVER_TYPES__HttpChannelRequestParams<M extends Record<string, an
     /**
      * HTTP Method
      */
-    method: A_SERVER_TYPES__ServerMethod,
+    method: A_HttpServerRequestMethod,
     /**
      * Request URL
      */

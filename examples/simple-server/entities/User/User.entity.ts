@@ -1,4 +1,4 @@
-import { A_Entity, A_Feature, A_Scope, ASEID,  } from "@adaas/a-concept";
+import { A_Entity, A_Feature, A_FormatterHelper, A_IdentityHelper, A_Scope, ASEID, } from "@adaas/a-concept";
 import { NewUser, UserJSON } from "./User.entity.types";
 import { UserDoing } from "examples/simple-server/context/UserDoing.context";
 
@@ -7,6 +7,14 @@ export class User extends A_Entity<NewUser, UserJSON> {
 
     static get entity(): string {
         return 'user';
+    }
+
+    static get concept(): string {
+        return 'a-server'
+    }
+
+    static get scope(): string {
+        return 'simple-server';
     }
 
     email!: string;
@@ -32,7 +40,7 @@ export class User extends A_Entity<NewUser, UserJSON> {
     // })
     async do(scope: A_Scope) {
         console.log('Doing something with user:', this.name);
-        
+
         const doingFragment = new UserDoing();
 
         scope.register(doingFragment);
@@ -42,12 +50,14 @@ export class User extends A_Entity<NewUser, UserJSON> {
 
 
     fromNew(newEntity: NewUser): void {
+
         this.aseid = new ASEID({
-            id: newEntity.id,
-            concept: 'users1',
-            scope: 'users2',
-            entity: 'user3'
-        });
+            concept: User.concept,
+            scope: User.scope,
+            entity: User.entity,
+            id: newEntity.id
+        })
+
 
         this.email = newEntity.email;
         this.name = newEntity.name
