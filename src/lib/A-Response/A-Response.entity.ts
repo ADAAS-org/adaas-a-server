@@ -89,6 +89,10 @@ export class A_Response<_ResponseType = any> extends A_Entity<
      * Event listeners map for A_Response events
      */
     private _listeners: Map<A_ResponseFeatureNames, Set<A_Response_Listener>> = new Map();
+    /**
+     * Whether this response is operating as a persistent SSE stream
+     */
+    private _isStreaming: boolean = false;
 
 
     constructor(params: A_Response_Constructor, options?: A_Response_Options) {
@@ -158,6 +162,14 @@ export class A_Response<_ResponseType = any> extends A_Entity<
     get size(): number {
         return this.original.getHeader('Content-Length') as number || 0;
     }
+    /**
+     * Whether this response is in SSE streaming mode.
+     * When true the server container will NOT auto-send and destroy() will
+     * leave the underlying socket open.
+     */
+    get isStreaming(): boolean {
+        return this._isStreaming;
+    }
 
     // ======================================================================================
     // --------------------------------------------------------------------------
@@ -188,7 +200,7 @@ export class A_Response<_ResponseType = any> extends A_Entity<
      */
     async destroy(): Promise<any> {
 
-        if (!this.original.destroyed) {
+        if (!this.original.destroyed && !this._isStreaming) {
             this.original.end();
             this._listeners.clear();
             this.original.removeAllListeners();
@@ -311,6 +323,56 @@ export class A_Response<_ResponseType = any> extends A_Entity<
                 originalError: error
             }));
         }
+    }
+    // ======================================================================================
+    // --------------------------------------------------------------------------
+    // A-Response SSE (Server-Sent Events) Methods
+    // --------------------------------------------------------------------------
+    // ======================================================================================
+    /**
+     * Upgrade this response to a persistent SSE stream.
+     * Sends the required headers and writes the initial `:ok` comment to flush
+     * the connection. After calling this the response will NOT be auto-closed
+     * by the server container or by destroy().
+     */
+    public sseOpen(): void {
+        if (this.headersSent || this._isStreaming) return;
+        this._isStreaming = true;
+        this.original.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache, no-transform',
+            'Connection': 'keep-alive',
+            'X-Accel-Buffering': 'no',
+        });
+        this.original.write(':ok\n\n');
+        // Reset streaming flag when the client disconnects
+        this.original.once('close', () => {
+            this._isStreaming = false;
+        });
+    }
+    /**
+     * Write a named SSE event onto the open stream.
+     * Format: `event: <name>\ndata: <JSON>\n\n`
+     *
+     * Compatible with browser EventSource `addEventListener(name, handler)`.
+     *
+     * @returns false when the channel is no longer writable
+     */
+    public sseWrite(event: string, data?: any): boolean {
+        if (!this._isStreaming || this.original.destroyed) return false;
+        try {
+            return this.original.write(`event: ${event}\ndata: ${JSON.stringify(data ?? {})}\n\n`);
+        } catch {
+            return false;
+        }
+    }
+    /**
+     * Close the SSE stream gracefully.
+     */
+    public sseClose(): void {
+        if (!this._isStreaming || this.original.destroyed) return;
+        this._isStreaming = false;
+        this.original.end();
     }
     /**
      * Write head with status and headers

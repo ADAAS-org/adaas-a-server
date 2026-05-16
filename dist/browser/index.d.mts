@@ -1002,6 +1002,10 @@ declare class A_Response<_ResponseType = any> extends A_Entity<A_Response_Constr
      * Event listeners map for A_Response events
      */
     private _listeners;
+    /**
+     * Whether this response is operating as a persistent SSE stream
+     */
+    private _isStreaming;
     constructor(params: A_Response_Constructor, options?: A_Response_Options);
     /**
      * Initialize from new entity parameters
@@ -1028,6 +1032,12 @@ declare class A_Response<_ResponseType = any> extends A_Entity<A_Response_Constr
      */
     get size(): number;
     /**
+     * Whether this response is in SSE streaming mode.
+     * When true the server container will NOT auto-send and destroy() will
+     * leave the underlying socket open.
+     */
+    get isStreaming(): boolean;
+    /**
      * Initialize the response
      */
     load(): Promise<void>;
@@ -1053,6 +1063,26 @@ declare class A_Response<_ResponseType = any> extends A_Entity<A_Response_Constr
      * [!] Note: This method ends the response immediately.
      */
     redirect(url: string): Promise<void>;
+    /**
+     * Upgrade this response to a persistent SSE stream.
+     * Sends the required headers and writes the initial `:ok` comment to flush
+     * the connection. After calling this the response will NOT be auto-closed
+     * by the server container or by destroy().
+     */
+    sseOpen(): void;
+    /**
+     * Write a named SSE event onto the open stream.
+     * Format: `event: <name>\ndata: <JSON>\n\n`
+     *
+     * Compatible with browser EventSource `addEventListener(name, handler)`.
+     *
+     * @returns false when the channel is no longer writable
+     */
+    sseWrite(event: string, data?: any): boolean;
+    /**
+     * Close the SSE stream gracefully.
+     */
+    sseClose(): void;
     /**
      * Write head with status and headers
      */

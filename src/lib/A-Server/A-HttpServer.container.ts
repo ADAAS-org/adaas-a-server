@@ -197,7 +197,12 @@ export class A_HttpServer extends A_Service {
 
 
                     req.clearTimeout();
-                    await res.status(200).send();
+
+                    // For SSE streams the controller calls response.sseOpen() which keeps
+                    // the socket alive; skip the auto-send so we don't close it here.
+                    if (!res.isStreaming) {
+                        await res.status(200).send();
+                    }
 
                     resolve();
                 } catch (error) {

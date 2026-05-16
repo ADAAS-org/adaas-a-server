@@ -1093,6 +1093,10 @@ var A_Response = class extends A_Entity {
      * Event listeners map for A_Response events
      */
     this._listeners = /* @__PURE__ */ new Map();
+    /**
+     * Whether this response is operating as a persistent SSE stream
+     */
+    this._isStreaming = false;
     this._options = {
       autoCompress: true,
       compressionThreshold: 1024,
@@ -1162,6 +1166,14 @@ var A_Response = class extends A_Entity {
   get size() {
     return this.original.getHeader("Content-Length") || 0;
   }
+  /**
+   * Whether this response is in SSE streaming mode.
+   * When true the server container will NOT auto-send and destroy() will
+   * leave the underlying socket open.
+   */
+  get isStreaming() {
+    return this._isStreaming;
+  }
   // ======================================================================================
   // --------------------------------------------------------------------------
   // A-Response Primary Methods
@@ -1183,7 +1195,7 @@ var A_Response = class extends A_Entity {
    * Destroy the response
    */
   async destroy() {
-    if (!this.original.destroyed) {
+    if (!this.original.destroyed && !this._isStreaming) {
       this.original.end();
       this._listeners.clear();
       this.original.removeAllListeners();
@@ -1281,6 +1293,58 @@ var A_Response = class extends A_Entity {
         originalError: error
       }));
     }
+  }
+  // ======================================================================================
+  // --------------------------------------------------------------------------
+  // A-Response SSE (Server-Sent Events) Methods
+  // --------------------------------------------------------------------------
+  // ======================================================================================
+  /**
+   * Upgrade this response to a persistent SSE stream.
+   * Sends the required headers and writes the initial `:ok` comment to flush
+   * the connection. After calling this the response will NOT be auto-closed
+   * by the server container or by destroy().
+   */
+  sseOpen() {
+    if (this.headersSent || this._isStreaming) return;
+    this._isStreaming = true;
+    this.original.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      "Connection": "keep-alive",
+      "X-Accel-Buffering": "no"
+    });
+    this.original.write(":ok\n\n");
+    this.original.once("close", () => {
+      this._isStreaming = false;
+    });
+  }
+  /**
+   * Write a named SSE event onto the open stream.
+   * Format: `event: <name>\ndata: <JSON>\n\n`
+   *
+   * Compatible with browser EventSource `addEventListener(name, handler)`.
+   *
+   * @returns false when the channel is no longer writable
+   */
+  sseWrite(event, data) {
+    if (!this._isStreaming || this.original.destroyed) return false;
+    try {
+      return this.original.write(`event: ${event}
+data: ${JSON.stringify(data ?? {})}
+
+`);
+    } catch {
+      return false;
+    }
+  }
+  /**
+   * Close the SSE stream gracefully.
+   */
+  sseClose() {
+    if (!this._isStreaming || this.original.destroyed) return;
+    this._isStreaming = false;
+    this.original.end();
   }
   /**
    * Write head with status and headers
@@ -1820,7 +1884,9 @@ var A_HttpServer = class extends A_Service {
           await onRequestFeature.process(scope);
           await onAfterRequestFeature.process(scope);
           req.clearTimeout();
-          await res.status(200).send();
+          if (!res.isStreaming) {
+            await res.status(200).send();
+          }
           resolve();
         } catch (error) {
           req.clearTimeout();

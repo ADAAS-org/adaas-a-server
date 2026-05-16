@@ -136,7 +136,9 @@ class A_HttpServer extends aService.A_Service {
           await onRequestFeature.process(scope);
           await onAfterRequestFeature.process(scope);
           req.clearTimeout();
-          await res.status(200).send();
+          if (!res.isStreaming) {
+            await res.status(200).send();
+          }
           resolve();
         } catch (error) {
           req.clearTimeout();
