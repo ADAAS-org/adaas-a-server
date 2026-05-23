@@ -1,6 +1,6 @@
 {
   "name": "@adaas/a-server",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "description": "A-Server is a powerful server framework designed to work seamlessly with the A-Concept framework. This library provides a robust and flexible server implementation of A-Server, enabling developers to create scalable and efficient server-side applications using the A-Concept architecture.",
   "keywords": [
     "adaas",
