@@ -6,6 +6,13 @@ var ARequest_entity = require('@adaas/a-server/request/A-Request.entity');
 var AResponse_entity = require('@adaas/a-server/response/A-Response.entity');
 var aConfig = require('@adaas/a-utils/a-config');
 var AServerLogger_component = require('@adaas/a-server/logger/A-ServerLogger.component');
+var fs = require('fs');
+var path = require('path');
+
+function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
+
+var fs__default = /*#__PURE__*/_interopDefault(fs);
+var path__default = /*#__PURE__*/_interopDefault(path);
 
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -20,13 +27,15 @@ var __decorateClass = (decorators, target, key, kind) => {
 var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
 class A_ServerHealthMonitor extends aConcept.A_Component {
   async get(config, request, response, logger) {
-    const packageJSON = await import(`${config.get("A_CONCEPT_ROOT_FOLDER")}/package.json`);
+    const rootFolder = config.get("A_CONCEPT_ROOT_FOLDER") || aConcept.A_CONCEPT_ENV.A_CONCEPT_ROOT_FOLDER || process.cwd();
+    const pkgPath = path__default.default.join(rootFolder, "package.json");
+    const packageJSON = JSON.parse(fs__default.default.readFileSync(pkgPath, "utf-8"));
     const exposedProperties = config.get("EXPOSED_PROPERTIES")?.split(",") || [
       "name",
       "version",
       "description"
     ];
-    exposedProperties.forEach((prop) => response.add(prop, packageJSON.default[prop]));
+    exposedProperties.forEach((prop) => response.add(prop, packageJSON[prop]));
   }
 }
 __decorateClass([
