@@ -225,6 +225,19 @@ export class A_HttpServer extends A_Service {
                     wrappedError = error.originalError;
                     break;
 
+                // Duck-type: A_Error (e.g. A_FeatureError) wrapping an HttpError-like original.
+                // A_Error.fromConstructor() unwraps nested A_Error chains, so originalError is
+                // always the root non-A_Error cause — check it for a numeric statusCode.
+                case error instanceof A_Error &&
+                    error.originalError instanceof Error &&
+                    typeof (error.originalError as any).statusCode === 'number':
+                    wrappedError = new A_HttpServerError({
+                        status: (error.originalError as any).statusCode as number,
+                        description: (error.originalError as Error).message,
+                        originalError: error.originalError,
+                    });
+                    break;
+
                 // Duck-type: any Error with a numeric statusCode property (e.g. http-errors,
                 // Express-style errors, or plain project HttpError classes).  Honour the
                 // status code so the caller gets the right 4xx / 5xx rather than a blanket 500.
