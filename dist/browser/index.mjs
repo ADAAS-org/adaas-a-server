@@ -1195,10 +1195,12 @@ var A_Response = class extends A_Entity {
    * Destroy the response
    */
   async destroy() {
-    if (!this.original.destroyed && !this._isStreaming) {
-      this.original.end();
+    if (!this._isStreaming) {
+      if (!this.original.writableEnded) {
+        this.original.end();
+      }
       this._listeners.clear();
-      this.original.removeAllListeners();
+      this.original.removeAllListeners("error");
     }
     return super.destroy();
   }
@@ -1901,6 +1903,16 @@ var A_HttpServer = class extends A_Service {
           break;
         case (error instanceof A_Error && error.originalError instanceof A_HttpServerError):
           wrappedError = error.originalError;
+          break;
+        // Duck-type: any Error with a numeric statusCode property (e.g. http-errors,
+        // Express-style errors, or plain project HttpError classes).  Honour the
+        // status code so the caller gets the right 4xx / 5xx rather than a blanket 500.
+        case (error instanceof Error && typeof error.statusCode === "number"):
+          wrappedError = new A_HttpServerError({
+            status: error.statusCode,
+            description: error.message,
+            originalError: error
+          });
           break;
         default:
           wrappedError = new A_HttpServerError({

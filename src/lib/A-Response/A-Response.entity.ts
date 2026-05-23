@@ -200,10 +200,21 @@ export class A_Response<_ResponseType = any> extends A_Entity<
      */
     async destroy(): Promise<any> {
 
-        if (!this.original.destroyed && !this._isStreaming) {
-            this.original.end();
+        if (!this._isStreaming) {
+            // Only call end() if not already ended — avoids double-end which can
+            // interrupt an in-flight response body on keep-alive connections.
+            if (!this.original.writableEnded) {
+                this.original.end();
+            }
+
             this._listeners.clear();
-            this.original.removeAllListeners();
+
+            // Remove only the 'error' listener we added in load().
+            // Do NOT call removeAllListeners() — that strips Node.js HTTP's own
+            // internal keep-alive 'finish' handler, causing the socket to never
+            // re-enter the server's connection pool and hanging all subsequent
+            // requests on the same keep-alive connection.
+            this.original.removeAllListeners('error');
         }
 
         return super.destroy();

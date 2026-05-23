@@ -128,10 +128,12 @@ class A_Response extends aConcept.A_Entity {
    * Destroy the response
    */
   async destroy() {
-    if (!this.original.destroyed && !this._isStreaming) {
-      this.original.end();
+    if (!this._isStreaming) {
+      if (!this.original.writableEnded) {
+        this.original.end();
+      }
       this._listeners.clear();
-      this.original.removeAllListeners();
+      this.original.removeAllListeners("error");
     }
     return super.destroy();
   }

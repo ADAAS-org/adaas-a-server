@@ -142,6 +142,16 @@ class A_HttpServer extends A_Service {
         case (error instanceof A_Error && error.originalError instanceof A_HttpServerError):
           wrappedError = error.originalError;
           break;
+        // Duck-type: any Error with a numeric statusCode property (e.g. http-errors,
+        // Express-style errors, or plain project HttpError classes).  Honour the
+        // status code so the caller gets the right 4xx / 5xx rather than a blanket 500.
+        case (error instanceof Error && typeof error.statusCode === "number"):
+          wrappedError = new A_HttpServerError({
+            status: error.statusCode,
+            description: error.message,
+            originalError: error
+          });
+          break;
         default:
           wrappedError = new A_HttpServerError({
             status: 500,
