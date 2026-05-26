@@ -292,7 +292,7 @@ var A_RequestHelper = class _A_RequestHelper {
     let bodyType;
     switch (true) {
       case (!!context.contentType && context.contentType.includes("application/json")):
-        parsedBody = JSON.parse(context.data);
+        parsedBody = JSON.parse(context.data || "{}");
         bodyType = "json";
         break;
       case (!!context.contentType && context.contentType.includes("application/x-www-form-urlencoded")):
