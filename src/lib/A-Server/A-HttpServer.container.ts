@@ -31,7 +31,7 @@ export class A_HttpServer extends A_Service {
         return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
             return A_Feature.Extend({
                 name: A_HttpServerFeatures.onBeforeRequest,
-                scope: [target.constructor],
+                scope: [A_HttpServer],
             })(target, propertyKey, descriptor);
         }
     }
@@ -40,7 +40,7 @@ export class A_HttpServer extends A_Service {
         return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
             return A_Feature.Extend({
                 name: A_HttpServerFeatures.onRequest,
-                scope: [target.constructor],
+                scope: [A_HttpServer],
             })(target, propertyKey, descriptor);
         }
     }
@@ -49,7 +49,7 @@ export class A_HttpServer extends A_Service {
         return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
             return A_Feature.Extend({
                 name: A_HttpServerFeatures.onAfterRequest,
-                scope: [target.constructor],
+                scope: [A_HttpServer],
             })(target, propertyKey, descriptor);
         }
     }

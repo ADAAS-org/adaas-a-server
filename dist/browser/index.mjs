@@ -1775,12 +1775,12 @@ __decorateClass([
   __decorateParam(0, A_Inject(A_Server))
 ], A_ServerLogger.prototype, "logStop", 1);
 var _a3, _b3, _c3, _d2, _e2;
-var A_HttpServer = class extends A_Service {
+var _A_HttpServer = class _A_HttpServer extends A_Service {
   static get onBeforeRequest() {
     return (target, propertyKey, descriptor) => {
       return A_Feature.Extend({
         name: A_HttpServerFeatures.onBeforeRequest,
-        scope: [target.constructor]
+        scope: [_A_HttpServer]
       })(target, propertyKey, descriptor);
     };
   }
@@ -1788,7 +1788,7 @@ var A_HttpServer = class extends A_Service {
     return (target, propertyKey, descriptor) => {
       return A_Feature.Extend({
         name: A_HttpServerFeatures.onRequest,
-        scope: [target.constructor]
+        scope: [_A_HttpServer]
       })(target, propertyKey, descriptor);
     };
   }
@@ -1796,7 +1796,7 @@ var A_HttpServer = class extends A_Service {
     return (target, propertyKey, descriptor) => {
       return A_Feature.Extend({
         name: A_HttpServerFeatures.onAfterRequest,
-        scope: [target.constructor]
+        scope: [_A_HttpServer]
       })(target, propertyKey, descriptor);
     };
   }
@@ -1945,21 +1945,22 @@ __decorateClass([
   __decorateParam(0, A_Inject(A_Polyfill)),
   __decorateParam(1, A_Dependency.Required()),
   __decorateParam(1, A_Inject(A_Config))
-], A_HttpServer.prototype, _e2, 1);
+], _A_HttpServer.prototype, _e2, 1);
 __decorateClass([
   A_Feature.Extend(),
   __decorateParam(0, A_Inject(A_Config)),
   __decorateParam(1, A_Inject(A_ServerLogger))
-], A_HttpServer.prototype, _d2, 1);
+], _A_HttpServer.prototype, _d2, 1);
 __decorateClass([
   A_Feature.Extend()
-], A_HttpServer.prototype, _c3, 1);
+], _A_HttpServer.prototype, _c3, 1);
 __decorateClass([
   A_Feature.Extend()
-], A_HttpServer.prototype, _b3, 1);
+], _A_HttpServer.prototype, _b3, 1);
 __decorateClass([
   A_Feature.Extend()
-], A_HttpServer.prototype, _a3, 1);
+], _A_HttpServer.prototype, _a3, 1);
+var A_HttpServer = _A_HttpServer;
 var A_ServerError = class extends A_Error {
   constructor() {
     super(...arguments);

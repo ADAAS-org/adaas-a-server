@@ -13,12 +13,12 @@ import { A_Polyfill } from '@adaas/a-utils/a-polyfill';
 import { A_Config } from '@adaas/a-utils/a-config';
 
 var _a, _b, _c, _d, _e;
-class A_HttpServer extends A_Service {
+const _A_HttpServer = class _A_HttpServer extends A_Service {
   static get onBeforeRequest() {
     return (target, propertyKey, descriptor) => {
       return A_Feature.Extend({
         name: A_HttpServerFeatures.onBeforeRequest,
-        scope: [target.constructor]
+        scope: [_A_HttpServer]
       })(target, propertyKey, descriptor);
     };
   }
@@ -26,7 +26,7 @@ class A_HttpServer extends A_Service {
     return (target, propertyKey, descriptor) => {
       return A_Feature.Extend({
         name: A_HttpServerFeatures.onRequest,
-        scope: [target.constructor]
+        scope: [_A_HttpServer]
       })(target, propertyKey, descriptor);
     };
   }
@@ -34,7 +34,7 @@ class A_HttpServer extends A_Service {
     return (target, propertyKey, descriptor) => {
       return A_Feature.Extend({
         name: A_HttpServerFeatures.onAfterRequest,
-        scope: [target.constructor]
+        scope: [_A_HttpServer]
       })(target, propertyKey, descriptor);
     };
   }
@@ -176,28 +176,29 @@ class A_HttpServer extends A_Service {
     }
     scope.destroy();
   }
-}
+};
 __decorateClass([
   A_Feature.Extend(),
   __decorateParam(0, A_Dependency.Required()),
   __decorateParam(0, A_Inject(A_Polyfill)),
   __decorateParam(1, A_Dependency.Required()),
   __decorateParam(1, A_Inject(A_Config))
-], A_HttpServer.prototype, _e, 1);
+], _A_HttpServer.prototype, _e, 1);
 __decorateClass([
   A_Feature.Extend(),
   __decorateParam(0, A_Inject(A_Config)),
   __decorateParam(1, A_Inject(A_ServerLogger))
-], A_HttpServer.prototype, _d, 1);
+], _A_HttpServer.prototype, _d, 1);
 __decorateClass([
   A_Feature.Extend()
-], A_HttpServer.prototype, _c, 1);
+], _A_HttpServer.prototype, _c, 1);
 __decorateClass([
   A_Feature.Extend()
-], A_HttpServer.prototype, _b, 1);
+], _A_HttpServer.prototype, _b, 1);
 __decorateClass([
   A_Feature.Extend()
-], A_HttpServer.prototype, _a, 1);
+], _A_HttpServer.prototype, _a, 1);
+let A_HttpServer = _A_HttpServer;
 
 export { A_HttpServer };
 //# sourceMappingURL=A-HttpServer.container.mjs.map

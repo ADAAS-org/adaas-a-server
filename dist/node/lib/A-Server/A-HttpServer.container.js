@@ -25,12 +25,12 @@ var __decorateClass = (decorators, target, key, kind) => {
 };
 var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
 var _a, _b, _c, _d, _e;
-class A_HttpServer extends aService.A_Service {
+const _A_HttpServer = class _A_HttpServer extends aService.A_Service {
   static get onBeforeRequest() {
     return (target, propertyKey, descriptor) => {
       return aConcept.A_Feature.Extend({
         name: AHttpServer_constants.A_HttpServerFeatures.onBeforeRequest,
-        scope: [target.constructor]
+        scope: [_A_HttpServer]
       })(target, propertyKey, descriptor);
     };
   }
@@ -38,7 +38,7 @@ class A_HttpServer extends aService.A_Service {
     return (target, propertyKey, descriptor) => {
       return aConcept.A_Feature.Extend({
         name: AHttpServer_constants.A_HttpServerFeatures.onRequest,
-        scope: [target.constructor]
+        scope: [_A_HttpServer]
       })(target, propertyKey, descriptor);
     };
   }
@@ -46,7 +46,7 @@ class A_HttpServer extends aService.A_Service {
     return (target, propertyKey, descriptor) => {
       return aConcept.A_Feature.Extend({
         name: AHttpServer_constants.A_HttpServerFeatures.onAfterRequest,
-        scope: [target.constructor]
+        scope: [_A_HttpServer]
       })(target, propertyKey, descriptor);
     };
   }
@@ -188,28 +188,29 @@ class A_HttpServer extends aService.A_Service {
     }
     scope.destroy();
   }
-}
+};
 __decorateClass([
   aConcept.A_Feature.Extend(),
   __decorateParam(0, aConcept.A_Dependency.Required()),
   __decorateParam(0, aConcept.A_Inject(aPolyfill.A_Polyfill)),
   __decorateParam(1, aConcept.A_Dependency.Required()),
   __decorateParam(1, aConcept.A_Inject(aConfig.A_Config))
-], A_HttpServer.prototype, _e);
+], _A_HttpServer.prototype, _e);
 __decorateClass([
   aConcept.A_Feature.Extend(),
   __decorateParam(0, aConcept.A_Inject(aConfig.A_Config)),
   __decorateParam(1, aConcept.A_Inject(AServerLogger_component.A_ServerLogger))
-], A_HttpServer.prototype, _d);
+], _A_HttpServer.prototype, _d);
 __decorateClass([
   aConcept.A_Feature.Extend()
-], A_HttpServer.prototype, _c);
+], _A_HttpServer.prototype, _c);
 __decorateClass([
   aConcept.A_Feature.Extend()
-], A_HttpServer.prototype, _b);
+], _A_HttpServer.prototype, _b);
 __decorateClass([
   aConcept.A_Feature.Extend()
-], A_HttpServer.prototype, _a);
+], _A_HttpServer.prototype, _a);
+let A_HttpServer = _A_HttpServer;
 
 exports.A_HttpServer = A_HttpServer;
 //# sourceMappingURL=A-HttpServer.container.js.map
