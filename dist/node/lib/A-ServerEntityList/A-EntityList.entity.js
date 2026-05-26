@@ -1,87 +1,160 @@
 'use strict';
 
 var aConcept = require('@adaas/a-concept');
+var AEntityListPagination_context = require('./A-EntityListPagination.context');
+var AEntityListCacheState_context = require('./A-EntityListCacheState.context');
 
 class A_ServerEntityList extends aConcept.A_Entity {
   constructor() {
     super(...arguments);
+    /**
+     * Ordered item references for O(1) positional access.
+     * The list's own scope is the authoritative store (enables @A_Inject and
+     * feature chains on items); this array mirrors the same items in order.
+     */
     this._items = [];
-    this._pagination = {
-      total: 0,
-      page: 1,
-      pageSize: 10
-    };
   }
   static get scope() {
     return "a-server";
   }
+  // ── Getters ──────────────────────────────────────────────────────────────
   /**
-   * Returns the entity constructor used for the list
+   * The list's own scope, created on first access and bound to this entity
+   * via A_Context.allocate.  Items, pagination and cache state are registered
+   * here so they participate in feature chains and @A_Inject resolution.
    */
+  get ownScope() {
+    if (!this._ownScope) {
+      this._ownScope = aConcept.A_Context.allocate(
+        this,
+        new aConcept.A_Scope({ name: `${this.aseid.id}-scope` })
+      );
+    }
+    return this._ownScope;
+  }
   get entityConstructor() {
     return this._entityConstructor;
   }
-  /**
-   * Returns the list of items contained in the entity list
-   */
   get items() {
     return this._items;
   }
-  /**
-   * Returns pagination information about the entity list
-   */
+  /** Pagination state — lives as a Fragment in the list's own scope. */
   get pagination() {
-    return this._pagination;
+    return this.ownScope.resolveFlatOnce(AEntityListPagination_context.A_ServerEntityListPagination);
   }
-  /**
-   * Creates a new instance of A_EntityList
-   * 
-   * @param newEntity 
-   */
+  get cacheState() {
+    return this.ownScope.resolveFlatOnce(AEntityListCacheState_context.A_ServerEntityListCacheState);
+  }
+  /** Total number of items currently held in memory. */
+  get length() {
+    return this._items.length;
+  }
+  // ── Initialisation ───────────────────────────────────────────────────────
   fromNew(newEntity) {
-    this.aseid = new aConcept.ASEID({
+    this.aseid = this.generateASEID({
       concept: aConcept.A_Context.root.name,
-      scope: "default",
-      entity: "a-list" + (newEntity.name ? `.${newEntity.name}` : ""),
-      id: (/* @__PURE__ */ new Date()).getTime().toString()
+      entity: "a-list." + newEntity.entity.name
     });
-    this._entityConstructor = newEntity.constructor;
+    this._entityConstructor = newEntity.entity;
+    this.ownScope.register(new AEntityListPagination_context.A_ServerEntityListPagination(newEntity.pagination));
+    this.ownScope.register(new AEntityListCacheState_context.A_ServerEntityListCacheState());
   }
   /**
-   * Allows to convert Repository Response data to EntityList instance
-   * 
-   * [!] This method does not load the data from the repository, it only converts the data to the EntityList instance
-   * 
-   * @param items 
-   * @param pagination 
+   * Populate the list from raw repository data.
+   * Items are registered in the list's own scope so they participate in
+   * feature chains and @A_Inject resolution.
    */
   fromList(items, pagination) {
-    this._items = items.map((item) => {
-      if (item instanceof aConcept.A_Entity) {
-        return item;
-      } else {
-        const entity = new this._entityConstructor(item);
-        return entity;
+    this._items.forEach((item) => {
+      try {
+        this.ownScope.deregister(item);
+      } catch {
       }
     });
+    this._items = items.map((item) => {
+      const entity = item instanceof aConcept.A_Entity ? item : new this._entityConstructor(item);
+      this.ownScope.register(entity);
+      return entity;
+    });
     if (pagination) {
-      this._pagination = {
-        total: pagination.total,
-        page: pagination.page,
-        pageSize: pagination.pageSize
-      };
+      this.pagination.update(pagination);
     }
   }
+  // ── Collection access ────────────────────────────────────────────────────
+  /** Return the item at `index`, or `undefined` if out of range. */
+  at(index) {
+    return this._items[index];
+  }
+  /** Replace the item at `index` in place. Accepts a live entity or a plain serialised object. */
+  replace(index, item) {
+    const next = item instanceof aConcept.A_Entity ? item : new this._entityConstructor(item);
+    try {
+      this.ownScope.deregister(this._items[index]);
+    } catch {
+    }
+    this.ownScope.register(next);
+    this._items[index] = next;
+    return this;
+  }
+  /** Append an item to the end of the list. */
+  push(item) {
+    const next = item instanceof aConcept.A_Entity ? item : new this._entityConstructor(item);
+    this.ownScope.register(next);
+    this._items.push(next);
+    return this;
+  }
+  /** Prepend an item to the beginning of the list. */
+  unshift(item) {
+    const next = item instanceof aConcept.A_Entity ? item : new this._entityConstructor(item);
+    this.ownScope.register(next);
+    this._items.unshift(next);
+    return this;
+  }
+  /** Remove the item at `index` from the list. */
+  remove(index) {
+    const [removed] = this._items.splice(index, 1);
+    if (removed) {
+      try {
+        this.ownScope.deregister(removed);
+      } catch {
+      }
+    }
+    return this;
+  }
+  /** Return the first item that satisfies `predicate`, or `undefined`. */
+  find(predicate) {
+    return this._items.find(predicate);
+  }
+  /** Return all items that satisfy `predicate` without mutating the list. */
+  filter(predicate) {
+    return this._items.filter(predicate);
+  }
+  // ── Caching ──────────────────────────────────────────────────────────────
   /**
-   * Serializes the EntityList to a JSON object
-   * 
-   * @returns 
+   * Mark this list as cached for `ttlMs` milliseconds from now.
+   * Callers can check `isCached()` to decide whether to skip `load()`.
    */
+  setCache(ttlMs) {
+    this.cacheState.set(ttlMs);
+    return this;
+  }
+  /** Returns `true` if the cache is still valid. */
+  isCached() {
+    return this.cacheState.isValid();
+  }
+  /** Invalidate the cache so the next `load()` call fetches fresh data. */
+  invalidateCache() {
+    this.cacheState.invalidate();
+    return this;
+  }
+  // ── Serialisation ────────────────────────────────────────────────────────
   toJSON() {
+    const { total, page, pageSize } = this.pagination;
     return {
       ...super.toJSON(),
       items: this._items.map((i) => i.toJSON()),
-      pagination: this._pagination
+      type: this._entityConstructor.entity ?? "unknown",
+      pagination: { total, page, pageSize }
     };
   }
 }

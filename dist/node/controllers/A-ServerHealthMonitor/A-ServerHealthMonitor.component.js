@@ -6,6 +6,7 @@ var ARequest_entity = require('@adaas/a-server/request/A-Request.entity');
 var AResponse_entity = require('@adaas/a-server/response/A-Response.entity');
 var aConfig = require('@adaas/a-utils/a-config');
 var AServerLogger_component = require('@adaas/a-server/logger/A-ServerLogger.component');
+var AHttpServer_error = require('../../lib/A-Server/A-HttpServer.error');
 var fs = require('fs');
 var path = require('path');
 
@@ -29,7 +30,15 @@ class A_ServerHealthMonitor extends aConcept.A_Component {
   async get(config, request, response, logger) {
     const rootFolder = config.get("A_CONCEPT_ROOT_FOLDER") || aConcept.A_CONCEPT_ENV.A_CONCEPT_ROOT_FOLDER || process.cwd();
     const pkgPath = path__default.default.join(rootFolder, "package.json");
-    const packageJSON = JSON.parse(fs__default.default.readFileSync(pkgPath, "utf-8"));
+    let packageJSON;
+    try {
+      packageJSON = JSON.parse(fs__default.default.readFileSync(pkgPath, "utf-8"));
+    } catch {
+      throw new AHttpServer_error.A_HttpServerError({
+        status: 500,
+        description: `Could not read package.json at "${pkgPath}"`
+      });
+    }
     const exposedProperties = config.get("EXPOSED_PROPERTIES")?.split(",") || [
       "name",
       "version",

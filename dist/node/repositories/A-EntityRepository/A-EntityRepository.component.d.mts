@@ -12,6 +12,7 @@ import '@adaas/a-utils/a-route';
 import '../../lib/A-ServerRoute/A-ServerRoute.types.mjs';
 import '../../lib/A-ServerRoute/A-ServerRoute.constants.mjs';
 import '../../lib/A-ServerEntityList/A-EntityList.types.mjs';
+import '../../lib/A-ServerEntityList/A-EntityListPagination.context.mjs';
 
 declare class A_EntityRepository extends A_HTTPChannel {
     execute(command: A_Command, scope: A_Scope): Promise<void>;

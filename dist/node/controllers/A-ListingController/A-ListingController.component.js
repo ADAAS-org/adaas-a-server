@@ -7,6 +7,7 @@ var AResponse_entity = require('@adaas/a-server/response/A-Response.entity');
 var AServerRouter_component = require('@adaas/a-server/router/A-ServerRouter.component');
 var AEntityList_entity = require('@adaas/a-server/entity-list/A-EntityList.entity');
 var AServerListQueryFilter_context = require('@adaas/a-server/list-query/A-ServerListQueryFilter.context');
+var AHttpServer_error = require('../../lib/A-Server/A-HttpServer.error');
 
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -21,25 +22,26 @@ var __decorateClass = (decorators, target, key, kind) => {
 var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
 class A_ListingController extends aConcept.A_Component {
   async list(request, response, scope, config) {
-    const constructor = scope.resolveConstructor(request.params.type);
-    if (constructor) {
-      const entityList = new AEntityList_entity.A_ServerEntityList({
-        name: request.params.type,
-        scope: scope.name,
-        constructor
+    const ctor = scope.resolveConstructor(request.params.type);
+    if (!ctor)
+      throw new AHttpServer_error.A_HttpServerError({
+        status: 404,
+        description: `Entity type "${request.params.type}" not registered`
       });
-      scope.register(entityList);
-      const queryFilter = new AServerListQueryFilter_context.A_ServerListQueryFilter(request.query, {
-        itemsPerPage: String(config.get("A_LIST_ITEMS_PER_PAGE") || "10"),
-        page: String(config.get("A_LIST_PAGE") || "1")
-      });
-      const queryScope = new aConcept.A_Scope({
-        fragments: [queryFilter]
-      }).inherit(scope);
-      await entityList.load(queryScope);
-      response.add("items", entityList.items);
-      response.add("pagination", entityList.pagination);
-    }
+    const entityList = new AEntityList_entity.A_ServerEntityList({
+      entity: ctor
+    });
+    scope.register(entityList);
+    const queryFilter = new AServerListQueryFilter_context.A_ServerListQueryFilter(request.query, {
+      itemsPerPage: String(config.get("A_LIST_ITEMS_PER_PAGE") || "10"),
+      page: String(config.get("A_LIST_PAGE") || "1")
+    });
+    const queryScope = new aConcept.A_Scope({
+      fragments: [queryFilter]
+    }).inherit(scope);
+    await entityList.load(queryScope);
+    response.add("items", entityList.items);
+    response.add("pagination", entityList.pagination);
   }
 }
 __decorateClass([

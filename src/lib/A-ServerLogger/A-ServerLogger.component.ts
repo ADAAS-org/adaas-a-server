@@ -1,5 +1,4 @@
-import { A_Error, A_Feature, A_Inject, } from "@adaas/a-concept";
-import { A_Server } from "@adaas/a-server/server/A-Server.context";
+import { A_Error, A_Feature, A_Inject, A_Scope, } from "@adaas/a-concept";
 import { A_Request } from "@adaas/a-server/request/A-Request.entity";
 import { A_Response } from "@adaas/a-server/response/A-Response.entity";
 import { A_ResponseFeatures } from "@adaas/a-server/response/A-Response.constants";
@@ -69,9 +68,9 @@ export class A_ServerLogger extends A_Logger {
         scope: [A_Service]
     })
     logStop(
-        @A_Inject(A_Server) server: A_Server,
+        @A_Inject(A_Scope) scope: A_Scope,
     ) {
-        this.log('red', `Server ${server.name} stopped`);
+        this.info('red', `Server ${scope.name} stopped`);
     }
 
 

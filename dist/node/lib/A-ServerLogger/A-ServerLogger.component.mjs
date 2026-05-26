@@ -1,6 +1,5 @@
 import { __decorateClass, __decorateParam } from '../../chunk-EQQGB2QZ.mjs';
-import { A_Feature, A_Inject, A_Error } from '@adaas/a-concept';
-import { A_Server } from '@adaas/a-server/server/A-Server.context';
+import { A_Feature, A_Inject, A_Error, A_Scope } from '@adaas/a-concept';
 import { A_Request } from '@adaas/a-server/request/A-Request.entity';
 import { A_Response } from '@adaas/a-server/response/A-Response.entity';
 import { A_ResponseFeatures } from '@adaas/a-server/response/A-Response.constants';
@@ -16,8 +15,8 @@ class A_ServerLogger extends A_Logger {
     this.info("red", `Request ${request.method} ${request.url} errored with status ${response.statusCode} in ${context.processingTime ?? "N/A"}ms`);
     this.error(error);
   }
-  logStop(server) {
-    this.log("red", `Server ${server.name} stopped`);
+  logStop(scope) {
+    this.info("red", `Server ${scope.name} stopped`);
   }
   serverReady(params) {
     const processId = process.pid;
@@ -68,7 +67,7 @@ __decorateClass([
     name: A_ServiceFeatures.onAfterStop,
     scope: [A_Service]
   }),
-  __decorateParam(0, A_Inject(A_Server))
+  __decorateParam(0, A_Inject(A_Scope))
 ], A_ServerLogger.prototype, "logStop", 1);
 
 export { A_ServerLogger };

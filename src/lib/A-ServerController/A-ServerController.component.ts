@@ -2,6 +2,7 @@ import { A_Component, A_Container, A_Context, A_Feature, A_Inject, A_Scope } fro
 import { A_ServerRouter } from "@adaas/a-server/router/A-ServerRouter.component";
 import { A_Response } from "@adaas/a-server/response/A-Response.entity";
 import { A_Request } from "@adaas/a-server/request/A-Request.entity";
+import { A_HttpServerError } from "../A-Server/A-HttpServer.error";
 
 
 
@@ -22,14 +23,17 @@ export class A_ServerController extends A_Component {
         @A_Inject(A_Scope) scope: A_Scope
     ) {
 
-        //  check step by step each parameter to ensure they are valid
-
         if (!scope.has(request.params.component))
-            return
+            throw new A_HttpServerError({
+                status: 404,
+                description: `Component "${request.params.component}" not found`,
+            });
 
         if (!request.params.operation || typeof request.params.operation !== 'string')
-            return;
-
+            throw new A_HttpServerError({
+                status: 400,
+                description: 'Missing or invalid "operation" parameter',
+            });
 
         const possibleComponent = scope.resolve(request.params.component);
 
@@ -39,7 +43,10 @@ export class A_ServerController extends A_Component {
             ![A_Component, A_Container]
                 .some(c => possibleComponent instanceof c)
         )
-            return;
+            throw new A_HttpServerError({
+                status: 404,
+                description: `"${request.params.component}" is not a valid component`,
+            });
 
         const component = possibleComponent as A_Component | A_Container;
 
@@ -48,8 +55,10 @@ export class A_ServerController extends A_Component {
         const targetFeature = meta.features().find(f => f.name === `${component.constructor.name}.${request.params.operation}`);
 
         if (!targetFeature)
-            return;
-
+            throw new A_HttpServerError({
+                status: 404,
+                description: `Operation "${request.params.operation}" not found on component "${request.params.component}"`,
+            });
 
         await component.call(request.params.operation, scope);
     }

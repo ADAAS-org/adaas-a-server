@@ -52,7 +52,7 @@ __decorateClass([
   __decorateParam(0, aConcept.A_Inject(aConfig.A_Config))
 ], A_ServerCORS.prototype, "init");
 __decorateClass([
-  AHttpServer_container.A_HttpServer.onAfterRequest,
+  AHttpServer_container.A_HttpServer.onBeforeRequest,
   __decorateParam(0, aConcept.A_Inject(ARequest_entity.A_Request)),
   __decorateParam(1, aConcept.A_Inject(AResponse_entity.A_Response))
 ], A_ServerCORS.prototype, "apply");

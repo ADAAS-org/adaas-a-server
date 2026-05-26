@@ -40,7 +40,7 @@ __decorateClass([
   __decorateParam(0, A_Inject(A_Config))
 ], A_ServerCORS.prototype, "init", 1);
 __decorateClass([
-  A_HttpServer.onAfterRequest,
+  A_HttpServer.onBeforeRequest,
   __decorateParam(0, A_Inject(A_Request)),
   __decorateParam(1, A_Inject(A_Response))
 ], A_ServerCORS.prototype, "apply", 1);

@@ -1,7 +1,6 @@
 'use strict';
 
 var aConcept = require('@adaas/a-concept');
-var AServer_context = require('@adaas/a-server/server/A-Server.context');
 var ARequest_entity = require('@adaas/a-server/request/A-Request.entity');
 var AResponse_entity = require('@adaas/a-server/response/A-Response.entity');
 var AResponse_constants = require('@adaas/a-server/response/A-Response.constants');
@@ -28,8 +27,8 @@ class A_ServerLogger extends aLogger.A_Logger {
     this.info("red", `Request ${request.method} ${request.url} errored with status ${response.statusCode} in ${context.processingTime ?? "N/A"}ms`);
     this.error(error);
   }
-  logStop(server) {
-    this.log("red", `Server ${server.name} stopped`);
+  logStop(scope) {
+    this.info("red", `Server ${scope.name} stopped`);
   }
   serverReady(params) {
     const processId = process.pid;
@@ -80,7 +79,7 @@ __decorateClass([
     name: aService.A_ServiceFeatures.onAfterStop,
     scope: [aService.A_Service]
   }),
-  __decorateParam(0, aConcept.A_Inject(AServer_context.A_Server))
+  __decorateParam(0, aConcept.A_Inject(aConcept.A_Scope))
 ], A_ServerLogger.prototype, "logStop");
 
 exports.A_ServerLogger = A_ServerLogger;

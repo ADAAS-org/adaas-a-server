@@ -1,5 +1,5 @@
 import { A_ExecutionContext } from '@adaas/a-utils/a-execution';
-import { A_Feature, A_Inject, A_Error, A_IdentityHelper, A_Scope, A_Dependency, A_Concept, A_Meta, A_Entity, ASEID, A_Context, A_Fragment, A_ComponentMeta, A_Component, A_TypeGuards, A_Feature_Define, A_Feature_Extend, A_Container } from '@adaas/a-concept';
+import { A_Feature, A_Inject, A_Error, A_Scope, A_IdentityHelper, A_Dependency, A_Concept, A_Meta, A_Entity, ASEID, A_Context, A_ComponentMeta, A_Component, A_TypeGuards, A_Fragment, A_Feature_Define, A_Feature_Extend, A_Container } from '@adaas/a-concept';
 import { A_OperationContext } from '@adaas/a-utils/a-operation';
 import { A_ScheduleObject } from '@adaas/a-utils/a-schedule';
 import { A_Config } from '@adaas/a-utils/a-config';
@@ -1696,22 +1696,6 @@ var A_ServerRoute = class extends A_Route {
     return new RegExp(`^${extensionScope.length ? `(${extensionScope.join("|")})` : ".*"}\\.${this.method}::${this.path.replace(/\/:([^\/]+)/g, "/([^/]+)")}$`);
   }
 };
-var A_Server = class extends A_Fragment {
-  constructor(params) {
-    super(params);
-    this._routes = [];
-    this.port = params.port;
-    this._name = params.name;
-    this.version = params.version || "v1";
-    this._routes = params.routes || this._routes;
-  }
-  /**
-   * A list of routes that the server will listen to
-   */
-  get routes() {
-    return this._routes;
-  }
-};
 var A_ServerLogger = class extends A_Logger {
   logRequestFinish(request, response, context) {
     this.info("green", `Request ${request.method} ${request.url} finished with status ${response.statusCode} in ${context.processingTime ?? "N/A"}ms`);
@@ -1720,8 +1704,8 @@ var A_ServerLogger = class extends A_Logger {
     this.info("red", `Request ${request.method} ${request.url} errored with status ${response.statusCode} in ${context.processingTime ?? "N/A"}ms`);
     this.error(error);
   }
-  logStop(server) {
-    this.log("red", `Server ${server.name} stopped`);
+  logStop(scope) {
+    this.info("red", `Server ${scope.name} stopped`);
   }
   serverReady(params) {
     const processId = process.pid;
@@ -1772,7 +1756,7 @@ __decorateClass([
     name: A_ServiceFeatures.onAfterStop,
     scope: [A_Service]
   }),
-  __decorateParam(0, A_Inject(A_Server))
+  __decorateParam(0, A_Inject(A_Scope))
 ], A_ServerLogger.prototype, "logStop", 1);
 var _a3, _b3, _c3, _d2, _e2;
 var _A_HttpServer = class _A_HttpServer extends A_Service {
@@ -1961,6 +1945,22 @@ __decorateClass([
   A_Feature.Extend()
 ], _A_HttpServer.prototype, _a3, 1);
 var A_HttpServer = _A_HttpServer;
+var A_Server = class extends A_Fragment {
+  constructor(params) {
+    super(params);
+    this._routes = [];
+    this.port = params.port;
+    this._name = params.name;
+    this.version = params.version || "v1";
+    this._routes = params.routes || this._routes;
+  }
+  /**
+   * A list of routes that the server will listen to
+   */
+  get routes() {
+    return this._routes;
+  }
+};
 var A_ServerError = class extends A_Error {
   constructor() {
     super(...arguments);
@@ -2227,17 +2227,29 @@ A_ServerRouter = __decorateClass([
 var A_ServerController = class extends A_Component {
   async callEntityMethod(request, response, scope) {
     if (!scope.has(request.params.component))
-      return;
+      throw new A_HttpServerError({
+        status: 404,
+        description: `Component "${request.params.component}" not found`
+      });
     if (!request.params.operation || typeof request.params.operation !== "string")
-      return;
+      throw new A_HttpServerError({
+        status: 400,
+        description: 'Missing or invalid "operation" parameter'
+      });
     const possibleComponent = scope.resolve(request.params.component);
     if (!possibleComponent || ![A_Component, A_Container].some((c) => possibleComponent instanceof c))
-      return;
+      throw new A_HttpServerError({
+        status: 404,
+        description: `"${request.params.component}" is not a valid component`
+      });
     const component = possibleComponent;
     const meta = A_Context.meta(component);
     const targetFeature = meta.features().find((f) => f.name === `${component.constructor.name}.${request.params.operation}`);
     if (!targetFeature)
-      return;
+      throw new A_HttpServerError({
+        status: 404,
+        description: `Operation "${request.params.operation}" not found on component "${request.params.component}"`
+      });
     await component.call(request.params.operation, scope);
   }
 };
@@ -2251,86 +2263,216 @@ __decorateClass([
   __decorateParam(1, A_Inject(A_Response)),
   __decorateParam(2, A_Inject(A_Scope))
 ], A_ServerController.prototype, "callEntityMethod", 1);
+var A_ServerEntityListPagination = class extends A_Fragment {
+  constructor(init) {
+    super();
+    this._total = 0;
+    this._page = 1;
+    this._pageSize = 10;
+    if (init) {
+      if (init.total !== void 0) this._total = init.total;
+      if (init.page !== void 0) this._page = init.page;
+      if (init.pageSize !== void 0) this._pageSize = init.pageSize;
+    }
+  }
+  get total() {
+    return this._total;
+  }
+  get page() {
+    return this._page;
+  }
+  get pageSize() {
+    return this._pageSize;
+  }
+  update(data) {
+    if (data.total !== void 0) this._total = data.total;
+    if (data.page !== void 0) this._page = data.page;
+    if (data.pageSize !== void 0) this._pageSize = data.pageSize;
+  }
+  fromJSON(serialized) {
+    this._total = serialized.total;
+    this._page = serialized.page;
+    this._pageSize = serialized.pageSize;
+  }
+  toJSON() {
+    return {
+      name: this.name,
+      total: this._total,
+      page: this._page,
+      pageSize: this._pageSize
+    };
+  }
+};
+var A_ServerEntityListCacheState = class extends A_Fragment {
+  set(ttlMs) {
+    this._timestamp = Date.now();
+    this._ttl = ttlMs;
+  }
+  invalidate() {
+    this._timestamp = void 0;
+    this._ttl = void 0;
+  }
+  isValid() {
+    if (this._timestamp === void 0 || this._ttl === void 0) return false;
+    return Date.now() - this._timestamp < this._ttl;
+  }
+  toJSON() {
+    return { name: this.name };
+  }
+};
+
+// src/lib/A-ServerEntityList/A-EntityList.entity.ts
 var A_ServerEntityList = class extends A_Entity {
   constructor() {
     super(...arguments);
+    /**
+     * Ordered item references for O(1) positional access.
+     * The list's own scope is the authoritative store (enables @A_Inject and
+     * feature chains on items); this array mirrors the same items in order.
+     */
     this._items = [];
-    this._pagination = {
-      total: 0,
-      page: 1,
-      pageSize: 10
-    };
   }
   static get scope() {
     return "a-server";
   }
+  // ── Getters ──────────────────────────────────────────────────────────────
   /**
-   * Returns the entity constructor used for the list
+   * The list's own scope, created on first access and bound to this entity
+   * via A_Context.allocate.  Items, pagination and cache state are registered
+   * here so they participate in feature chains and @A_Inject resolution.
    */
+  get ownScope() {
+    if (!this._ownScope) {
+      this._ownScope = A_Context.allocate(
+        this,
+        new A_Scope({ name: `${this.aseid.id}-scope` })
+      );
+    }
+    return this._ownScope;
+  }
   get entityConstructor() {
     return this._entityConstructor;
   }
-  /**
-   * Returns the list of items contained in the entity list
-   */
   get items() {
     return this._items;
   }
-  /**
-   * Returns pagination information about the entity list
-   */
+  /** Pagination state — lives as a Fragment in the list's own scope. */
   get pagination() {
-    return this._pagination;
+    return this.ownScope.resolveFlatOnce(A_ServerEntityListPagination);
   }
-  /**
-   * Creates a new instance of A_EntityList
-   * 
-   * @param newEntity 
-   */
+  get cacheState() {
+    return this.ownScope.resolveFlatOnce(A_ServerEntityListCacheState);
+  }
+  /** Total number of items currently held in memory. */
+  get length() {
+    return this._items.length;
+  }
+  // ── Initialisation ───────────────────────────────────────────────────────
   fromNew(newEntity) {
-    this.aseid = new ASEID({
+    this.aseid = this.generateASEID({
       concept: A_Context.root.name,
-      scope: "default",
-      entity: "a-list" + (newEntity.name ? `.${newEntity.name}` : ""),
-      id: (/* @__PURE__ */ new Date()).getTime().toString()
+      entity: "a-list." + newEntity.entity.name
     });
-    this._entityConstructor = newEntity.constructor;
+    this._entityConstructor = newEntity.entity;
+    this.ownScope.register(new A_ServerEntityListPagination(newEntity.pagination));
+    this.ownScope.register(new A_ServerEntityListCacheState());
   }
   /**
-   * Allows to convert Repository Response data to EntityList instance
-   * 
-   * [!] This method does not load the data from the repository, it only converts the data to the EntityList instance
-   * 
-   * @param items 
-   * @param pagination 
+   * Populate the list from raw repository data.
+   * Items are registered in the list's own scope so they participate in
+   * feature chains and @A_Inject resolution.
    */
   fromList(items, pagination) {
-    this._items = items.map((item) => {
-      if (item instanceof A_Entity) {
-        return item;
-      } else {
-        const entity = new this._entityConstructor(item);
-        return entity;
+    this._items.forEach((item) => {
+      try {
+        this.ownScope.deregister(item);
+      } catch {
       }
     });
+    this._items = items.map((item) => {
+      const entity = item instanceof A_Entity ? item : new this._entityConstructor(item);
+      this.ownScope.register(entity);
+      return entity;
+    });
     if (pagination) {
-      this._pagination = {
-        total: pagination.total,
-        page: pagination.page,
-        pageSize: pagination.pageSize
-      };
+      this.pagination.update(pagination);
     }
   }
+  // ── Collection access ────────────────────────────────────────────────────
+  /** Return the item at `index`, or `undefined` if out of range. */
+  at(index) {
+    return this._items[index];
+  }
+  /** Replace the item at `index` in place. Accepts a live entity or a plain serialised object. */
+  replace(index, item) {
+    const next = item instanceof A_Entity ? item : new this._entityConstructor(item);
+    try {
+      this.ownScope.deregister(this._items[index]);
+    } catch {
+    }
+    this.ownScope.register(next);
+    this._items[index] = next;
+    return this;
+  }
+  /** Append an item to the end of the list. */
+  push(item) {
+    const next = item instanceof A_Entity ? item : new this._entityConstructor(item);
+    this.ownScope.register(next);
+    this._items.push(next);
+    return this;
+  }
+  /** Prepend an item to the beginning of the list. */
+  unshift(item) {
+    const next = item instanceof A_Entity ? item : new this._entityConstructor(item);
+    this.ownScope.register(next);
+    this._items.unshift(next);
+    return this;
+  }
+  /** Remove the item at `index` from the list. */
+  remove(index) {
+    const [removed] = this._items.splice(index, 1);
+    if (removed) {
+      try {
+        this.ownScope.deregister(removed);
+      } catch {
+      }
+    }
+    return this;
+  }
+  /** Return the first item that satisfies `predicate`, or `undefined`. */
+  find(predicate) {
+    return this._items.find(predicate);
+  }
+  /** Return all items that satisfy `predicate` without mutating the list. */
+  filter(predicate) {
+    return this._items.filter(predicate);
+  }
+  // ── Caching ──────────────────────────────────────────────────────────────
   /**
-   * Serializes the EntityList to a JSON object
-   * 
-   * @returns 
+   * Mark this list as cached for `ttlMs` milliseconds from now.
+   * Callers can check `isCached()` to decide whether to skip `load()`.
    */
+  setCache(ttlMs) {
+    this.cacheState.set(ttlMs);
+    return this;
+  }
+  /** Returns `true` if the cache is still valid. */
+  isCached() {
+    return this.cacheState.isValid();
+  }
+  /** Invalidate the cache so the next `load()` call fetches fresh data. */
+  invalidateCache() {
+    this.cacheState.invalidate();
+    return this;
+  }
+  // ── Serialisation ────────────────────────────────────────────────────────
   toJSON() {
+    const { total, page, pageSize } = this.pagination;
     return {
       ...super.toJSON(),
       items: this._items.map((i) => i.toJSON()),
-      pagination: this._pagination
+      type: this._entityConstructor.entity ?? "unknown",
+      pagination: { total, page, pageSize }
     };
   }
 };
@@ -2953,6 +3095,6 @@ var A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES_ARRAY = [
   A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES.A_SERVER_PORT
 ];
 
-export { A_HttpRequestData, A_HttpServer, A_HttpServerError, A_HttpServerFeatures, A_HttpServerRequestContext, A_ProxyConfig, A_Request, A_RequestEnvVariables, A_RequestEnvVariablesArray, A_RequestError, A_RequestFeatures, A_RequestHelper, A_Request_Event, A_Response, A_ResponseError, A_ResponseFeatures, A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES, A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES_ARRAY, A_SERVER_TYPES__A_EntityListEvent, A_SERVER__A_SERVER_LOGGER_ENV_VARIABLES, A_Server, A_ServerController, A_ServerEntityList, A_ServerError, A_ServerListQueryFilter, A_ServerLogger, A_ServerMiddleware, A_ServerProxy, A_ServerRoute, A_ServerRouteHttpMethods, A_ServerRouteProtocols, A_ServerRouter, A_ServerRouterDefineDecorator, A_ServerRouterMeta, A_ServerRouterMetaKeys, A_StaticConfig, A_StaticLoader, PROXY_CONFIG_DEFAULTS };
+export { A_HttpRequestData, A_HttpServer, A_HttpServerError, A_HttpServerFeatures, A_HttpServerRequestContext, A_ProxyConfig, A_Request, A_RequestEnvVariables, A_RequestEnvVariablesArray, A_RequestError, A_RequestFeatures, A_RequestHelper, A_Request_Event, A_Response, A_ResponseError, A_ResponseFeatures, A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES, A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES_ARRAY, A_SERVER_TYPES__A_EntityListEvent, A_SERVER__A_SERVER_LOGGER_ENV_VARIABLES, A_Server, A_ServerController, A_ServerEntityList, A_ServerEntityListCacheState, A_ServerEntityListPagination, A_ServerError, A_ServerListQueryFilter, A_ServerLogger, A_ServerMiddleware, A_ServerProxy, A_ServerRoute, A_ServerRouteHttpMethods, A_ServerRouteProtocols, A_ServerRouter, A_ServerRouterDefineDecorator, A_ServerRouterMeta, A_ServerRouterMetaKeys, A_StaticConfig, A_StaticLoader, PROXY_CONFIG_DEFAULTS };
 //# sourceMappingURL=index.mjs.map
 //# sourceMappingURL=index.mjs.map

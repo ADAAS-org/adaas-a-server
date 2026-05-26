@@ -6,28 +6,30 @@ import { A_Response } from '@adaas/a-server/response/A-Response.entity';
 import { A_ServerRouter } from '@adaas/a-server/router/A-ServerRouter.component';
 import { A_ServerEntityList } from '@adaas/a-server/entity-list/A-EntityList.entity';
 import { A_ServerListQueryFilter } from '@adaas/a-server/list-query/A-ServerListQueryFilter.context';
+import { A_HttpServerError } from '../../lib/A-Server/A-HttpServer.error';
 
 class A_ListingController extends A_Component {
   async list(request, response, scope, config) {
-    const constructor = scope.resolveConstructor(request.params.type);
-    if (constructor) {
-      const entityList = new A_ServerEntityList({
-        name: request.params.type,
-        scope: scope.name,
-        constructor
+    const ctor = scope.resolveConstructor(request.params.type);
+    if (!ctor)
+      throw new A_HttpServerError({
+        status: 404,
+        description: `Entity type "${request.params.type}" not registered`
       });
-      scope.register(entityList);
-      const queryFilter = new A_ServerListQueryFilter(request.query, {
-        itemsPerPage: String(config.get("A_LIST_ITEMS_PER_PAGE") || "10"),
-        page: String(config.get("A_LIST_PAGE") || "1")
-      });
-      const queryScope = new A_Scope({
-        fragments: [queryFilter]
-      }).inherit(scope);
-      await entityList.load(queryScope);
-      response.add("items", entityList.items);
-      response.add("pagination", entityList.pagination);
-    }
+    const entityList = new A_ServerEntityList({
+      entity: ctor
+    });
+    scope.register(entityList);
+    const queryFilter = new A_ServerListQueryFilter(request.query, {
+      itemsPerPage: String(config.get("A_LIST_ITEMS_PER_PAGE") || "10"),
+      page: String(config.get("A_LIST_PAGE") || "1")
+    });
+    const queryScope = new A_Scope({
+      fragments: [queryFilter]
+    }).inherit(scope);
+    await entityList.load(queryScope);
+    response.add("items", entityList.items);
+    response.add("pagination", entityList.pagination);
   }
 }
 __decorateClass([

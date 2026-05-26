@@ -31,6 +31,8 @@ export * from './lib/A-ServerController/A-ServerController.types';
 // ── lib/A-ServerEntityList ────────────────────────────────────────────────────
 export * from './lib/A-ServerEntityList/A-EntityList.entity';
 export * from './lib/A-ServerEntityList/A-EntityList.types';
+export * from './lib/A-ServerEntityList/A-EntityListPagination.context';
+export * from './lib/A-ServerEntityList/A-EntityListCacheState.context';
 
 // ── lib/A-ServerListQuery ─────────────────────────────────────────────────────
 export * from './lib/A-ServerListQuery/A-ServerListQueryFilter.context';

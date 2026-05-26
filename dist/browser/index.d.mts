@@ -2,7 +2,7 @@ import { A_ExecutionContext } from '@adaas/a-utils/a-execution';
 import { IncomingMessage, ServerResponse, IncomingHttpHeaders, Server } from 'http';
 import { A_OperationContext, A_Operation_Storage } from '@adaas/a-utils/a-operation';
 import * as _adaas_a_concept from '@adaas/a-concept';
-import { A_TYPES__Error_Init, A_TYPES__Error_Serialized, A_TYPES__Entity_Serialized, A_Error, A_Entity, A_Fragment, A_TYPES__Required, A_Component, A_Scope, A_TYPES__Entity_Constructor, A_TYPES__ConceptENVVariables, A_Feature, A_TYPES__ComponentMeta, A_ComponentMeta, A_TYPES__MetaLinkedComponentConstructors } from '@adaas/a-concept';
+import { A_TYPES__Error_Init, A_TYPES__Error_Serialized, A_TYPES__Entity_Serialized, A_Error, A_Entity, A_Scope, A_Fragment, A_TYPES__Required, A_Component, A_TYPES__Entity_Constructor, A_TYPES__Fragment_Serialized, A_TYPES__ConceptENVVariables, A_Feature, A_TYPES__ComponentMeta, A_ComponentMeta, A_TYPES__MetaLinkedComponentConstructors } from '@adaas/a-concept';
 import { A_Config } from '@adaas/a-utils/a-config';
 import { A_Route } from '@adaas/a-utils/a-route';
 import { Readable } from 'stream';
@@ -1200,44 +1200,11 @@ declare const A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES: {
 type A_TYPES__ServerENVVariables = (typeof A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES)[keyof typeof A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES][];
 declare const A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES_ARRAY: readonly ["A_SERVER_PORT"];
 
-type A_SERVER_TYPES__ServerConstructor = {
-    name: string;
-    version: string;
-    routes: A_ServerRoute[];
-    port: number;
-};
-type A_SERVER_TYPES__ServerError_Init = {
-    /**
-     * HTTP Status Code of the error
-     */
-    status?: number;
-} & A_TYPES__Error_Init;
-type A_SERVER_TYPES__ServerError_Serialized = {
-    /**
-     * HTTP Status Code of the error
-     */
-    status: number;
-} & A_TYPES__Error_Serialized;
-
-declare class A_Server extends A_Fragment {
-    port: number;
-    version: string;
-    protected _routes: A_ServerRoute[];
-    constructor(params: A_TYPES__Required<Partial<A_SERVER_TYPES__ServerConstructor>, [
-        'port',
-        'name'
-    ]>);
-    /**
-     * A list of routes that the server will listen to
-     */
-    get routes(): A_ServerRoute[];
-}
-
 declare class A_ServerLogger extends A_Logger {
     protected config: A_Config<any>;
     logRequestFinish(request: A_Request, response: A_Response, context: A_HttpServerRequestContext): void;
     logResponseError(request: A_Request, response: A_Response, context: A_HttpServerRequestContext, error: A_Error): void;
-    logStop(server: A_Server): void;
+    logStop(scope: A_Scope): void;
     serverReady(params: {
         port: number;
         app: {
@@ -1277,6 +1244,39 @@ declare class A_HttpServer extends A_Service {
     handleRequest(request: IncomingMessage, response: ServerResponse): Promise<void>;
 }
 
+type A_SERVER_TYPES__ServerConstructor = {
+    name: string;
+    version: string;
+    routes: A_ServerRoute[];
+    port: number;
+};
+type A_SERVER_TYPES__ServerError_Init = {
+    /**
+     * HTTP Status Code of the error
+     */
+    status?: number;
+} & A_TYPES__Error_Init;
+type A_SERVER_TYPES__ServerError_Serialized = {
+    /**
+     * HTTP Status Code of the error
+     */
+    status: number;
+} & A_TYPES__Error_Serialized;
+
+declare class A_Server extends A_Fragment {
+    port: number;
+    version: string;
+    protected _routes: A_ServerRoute[];
+    constructor(params: A_TYPES__Required<Partial<A_SERVER_TYPES__ServerConstructor>, [
+        'port',
+        'name'
+    ]>);
+    /**
+     * A list of routes that the server will listen to
+     */
+    get routes(): A_ServerRoute[];
+}
+
 declare class A_ServerError extends A_Error<A_SERVER_TYPES__ServerError_Init, A_SERVER_TYPES__ServerError_Serialized> {
     status: number;
     protected fromConstructor(params: A_SERVER_TYPES__ServerError_Init): void;
@@ -1290,10 +1290,14 @@ declare class A_ServerController extends A_Component {
     }>, response: A_Response, scope: A_Scope): Promise<void>;
 }
 
-type A_SERVER_TYPES__A_EntityListConstructor = {
-    name: string;
-    scope: string;
-    constructor: A_TYPES__Entity_Constructor;
+type A_SERVER_TYPES__A_EntityListConstructor<T extends A_Entity = A_Entity> = {
+    /** User-facing: the entity class (e.g. `User`). Name and scope are derived from its statics. */
+    entity: A_TYPES__Entity_Constructor<T>;
+    /** Initial pagination request parameters. Defaults to page 1, pageSize 10. */
+    pagination?: {
+        page?: number;
+        pageSize?: number;
+    };
 };
 declare enum A_SERVER_TYPES__A_EntityListEvent {
     Load = "load"
@@ -1308,50 +1312,100 @@ type A_SERVER_TYPES__A_EntityListPagination = {
     page: number;
     pageSize: number;
 };
+type A_SERVER_TYPES__A_EntityListCacheEntry = {
+    timestamp: number;
+    ttl: number;
+};
+
+type A_SERVER_TYPES__A_EntityListPaginationSerialized = A_SERVER_TYPES__A_EntityListPagination & A_TYPES__Fragment_Serialized;
+declare class A_ServerEntityListPagination extends A_Fragment<A_SERVER_TYPES__A_EntityListPaginationSerialized> {
+    protected _total: number;
+    protected _page: number;
+    protected _pageSize: number;
+    constructor(init?: Partial<A_SERVER_TYPES__A_EntityListPagination>);
+    get total(): number;
+    get page(): number;
+    get pageSize(): number;
+    update(data: Partial<A_SERVER_TYPES__A_EntityListPagination>): void;
+    fromJSON(serialized: A_SERVER_TYPES__A_EntityListPaginationSerialized): void;
+    toJSON(): A_SERVER_TYPES__A_EntityListPaginationSerialized;
+}
 
 /**
  * A-EntityList
  *
- * Entity that represents a list of entities with pagination of particular type
+ * Typed, paginated list of A-Concept entities.
+ *
+ * Construction (user-facing):
+ *   new A_ServerEntityList<User>({ entity: User, pagination: { page: 1, pageSize: 20 } })
+ *
+ * Construction (controller-internal, backward-compat):
+ *   new A_ServerEntityList({ name: 'user', scope: 'my-scope', constructor: User })
  */
-declare class A_ServerEntityList<EntityType extends A_Entity = A_Entity> extends A_Entity<A_SERVER_TYPES__A_EntityListConstructor, A_SERVER_TYPES__A_EntityListSerialized> {
+declare class A_ServerEntityList<EntityType extends A_Entity = A_Entity> extends A_Entity<A_SERVER_TYPES__A_EntityListConstructor<EntityType>, A_SERVER_TYPES__A_EntityListSerialized<EntityType>> {
     static get scope(): string;
-    protected _entityConstructor: new (...args: ConstructorParameters<typeof A_Entity>) => EntityType;
+    protected _entityConstructor: A_TYPES__Entity_Constructor<EntityType>;
+    /**
+     * Ordered item references for O(1) positional access.
+     * The list's own scope is the authoritative store (enables @A_Inject and
+     * feature chains on items); this array mirrors the same items in order.
+     */
     protected _items: Array<EntityType>;
-    protected _pagination: A_SERVER_TYPES__A_EntityListPagination;
+    /** Lazily allocated private scope — pagination and cache state live here. */
+    private _ownScope?;
     /**
-     * Returns the entity constructor used for the list
+     * The list's own scope, created on first access and bound to this entity
+     * via A_Context.allocate.  Items, pagination and cache state are registered
+     * here so they participate in feature chains and @A_Inject resolution.
      */
-    get entityConstructor(): new (...args: ConstructorParameters<typeof A_Entity>) => EntityType;
-    /**
-     * Returns the list of items contained in the entity list
-     */
+    get ownScope(): A_Scope;
+    get entityConstructor(): A_TYPES__Entity_Constructor<EntityType>;
     get items(): Array<EntityType>;
+    /** Pagination state — lives as a Fragment in the list's own scope. */
+    get pagination(): A_ServerEntityListPagination;
+    private get cacheState();
+    /** Total number of items currently held in memory. */
+    get length(): number;
+    fromNew(newEntity: A_SERVER_TYPES__A_EntityListConstructor<EntityType>): void;
     /**
-     * Returns pagination information about the entity list
-     */
-    get pagination(): A_SERVER_TYPES__A_EntityListPagination;
-    /**
-     * Creates a new instance of A_EntityList
-     *
-     * @param newEntity
-     */
-    fromNew(newEntity: A_SERVER_TYPES__A_EntityListConstructor): void;
-    /**
-     * Allows to convert Repository Response data to EntityList instance
-     *
-     * [!] This method does not load the data from the repository, it only converts the data to the EntityList instance
-     *
-     * @param items
-     * @param pagination
+     * Populate the list from raw repository data.
+     * Items are registered in the list's own scope so they participate in
+     * feature chains and @A_Inject resolution.
      */
     fromList(items: Array<EntityType> | Array<ReturnType<EntityType['toJSON']>>, pagination?: A_SERVER_TYPES__A_EntityListPagination): void;
+    /** Return the item at `index`, or `undefined` if out of range. */
+    at(index: number): EntityType | undefined;
+    /** Replace the item at `index` in place. Accepts a live entity or a plain serialised object. */
+    replace(index: number, item: EntityType | ReturnType<EntityType['toJSON']>): this;
+    /** Append an item to the end of the list. */
+    push(item: EntityType | ReturnType<EntityType['toJSON']>): this;
+    /** Prepend an item to the beginning of the list. */
+    unshift(item: EntityType | ReturnType<EntityType['toJSON']>): this;
+    /** Remove the item at `index` from the list. */
+    remove(index: number): this;
+    /** Return the first item that satisfies `predicate`, or `undefined`. */
+    find(predicate: (item: EntityType, index: number) => boolean): EntityType | undefined;
+    /** Return all items that satisfy `predicate` without mutating the list. */
+    filter(predicate: (item: EntityType, index: number) => boolean): EntityType[];
     /**
-     * Serializes the EntityList to a JSON object
-     *
-     * @returns
+     * Mark this list as cached for `ttlMs` milliseconds from now.
+     * Callers can check `isCached()` to decide whether to skip `load()`.
      */
+    setCache(ttlMs: number): this;
+    /** Returns `true` if the cache is still valid. */
+    isCached(): boolean;
+    /** Invalidate the cache so the next `load()` call fetches fresh data. */
+    invalidateCache(): this;
     toJSON(): A_SERVER_TYPES__A_EntityListSerialized<EntityType>;
+}
+
+declare class A_ServerEntityListCacheState extends A_Fragment<A_TYPES__Fragment_Serialized> {
+    protected _timestamp?: number;
+    protected _ttl?: number;
+    set(ttlMs: number): void;
+    invalidate(): void;
+    isValid(): boolean;
+    toJSON(): A_TYPES__Fragment_Serialized;
 }
 
 declare class A_ServerListQueryFilter<FilterFields extends string[]> extends A_Fragment {
@@ -1696,4 +1750,4 @@ type A_SERVER_TYPES__StaticLoader_Init = {
     staticFilesPath: string;
 };
 
-export { A_HttpRequestData, A_HttpServer, A_HttpServerError, type A_HttpServerError_Init, type A_HttpServerError_Serialized, type A_HttpServerFeatureNames, A_HttpServerFeatures, A_HttpServerRequestContext, type A_HttpServerRequestMethod, A_ProxyConfig, A_Request, A_RequestEnvVariables, A_RequestEnvVariablesArray, type A_RequestEnvVariablesType, A_RequestError, type A_RequestFeatureNames, A_RequestFeatures, A_RequestHelper, type A_Request_BodyType, A_Request_Event, type A_Request_EventCallback, type A_Request_FileUpload, type A_Request_Init, type A_Request_Listener, type A_Request_Methods, type A_Request_Options, type A_Request_ParsedBody, type A_Request_Serialized, type A_Request_SessionData, type A_Request_ValidationResult, A_Response, A_ResponseError, type A_ResponseFeatureNames, A_ResponseFeatures, type A_Response_CacheOptions, type A_Response_CompressionOptions, type A_Response_Constructor, type A_Response_CookieOptions, type A_Response_DownloadOptions, type A_Response_Listener, type A_Response_Options, type A_Response_SendResponseObject, type A_Response_Serialized, type A_Response_StreamOptions, A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES, A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES_ARRAY, type A_SERVER_TYPES__A_EntityListConstructor, A_SERVER_TYPES__A_EntityListEvent, type A_SERVER_TYPES__A_EntityListPagination, type A_SERVER_TYPES__A_EntityListSerialized, type A_SERVER_TYPES__ProxyConfigConstructor, type A_SERVER_TYPES__ProxyConfigConstructorConfig, type A_SERVER_TYPES__RoutesConfig, type A_SERVER_TYPES__ServerConstructor, type A_SERVER_TYPES__ServerError_Init, type A_SERVER_TYPES__ServerError_Serialized, type A_SERVER_TYPES__ServerLoggerEnvVariables, type A_SERVER_TYPES__ServerLoggerRouteParams, type A_SERVER_TYPES__StaticLoader_Init, A_SERVER__A_SERVER_LOGGER_ENV_VARIABLES, A_Server, A_ServerController, A_ServerEntityList, A_ServerError, A_ServerListQueryFilter, A_ServerLogger, A_ServerMiddleware, A_ServerProxy, A_ServerRoute, type A_ServerRouteHttpMethodNames, A_ServerRouteHttpMethods, A_ServerRouteProtocols, A_ServerRouter, A_ServerRouterDefineDecorator, A_ServerRouterMeta, type A_ServerRouterMetaKeyNames, A_ServerRouterMetaKeys, type A_ServerRouterMetaStructure, type A_ServerRouterRouteConfig, type A_ServerRouterRouteDefinition, type A_StaticAlias, A_StaticConfig, type A_StaticDirectoryConfig, A_StaticLoader, type A_TYPES__ServerENVVariables, type A_serverRouteProtocolNames, PROXY_CONFIG_DEFAULTS };
+export { A_HttpRequestData, A_HttpServer, A_HttpServerError, type A_HttpServerError_Init, type A_HttpServerError_Serialized, type A_HttpServerFeatureNames, A_HttpServerFeatures, A_HttpServerRequestContext, type A_HttpServerRequestMethod, A_ProxyConfig, A_Request, A_RequestEnvVariables, A_RequestEnvVariablesArray, type A_RequestEnvVariablesType, A_RequestError, type A_RequestFeatureNames, A_RequestFeatures, A_RequestHelper, type A_Request_BodyType, A_Request_Event, type A_Request_EventCallback, type A_Request_FileUpload, type A_Request_Init, type A_Request_Listener, type A_Request_Methods, type A_Request_Options, type A_Request_ParsedBody, type A_Request_Serialized, type A_Request_SessionData, type A_Request_ValidationResult, A_Response, A_ResponseError, type A_ResponseFeatureNames, A_ResponseFeatures, type A_Response_CacheOptions, type A_Response_CompressionOptions, type A_Response_Constructor, type A_Response_CookieOptions, type A_Response_DownloadOptions, type A_Response_Listener, type A_Response_Options, type A_Response_SendResponseObject, type A_Response_Serialized, type A_Response_StreamOptions, A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES, A_SERVER_CONSTANTS__DEFAULT_ENV_VARIABLES_ARRAY, type A_SERVER_TYPES__A_EntityListCacheEntry, type A_SERVER_TYPES__A_EntityListConstructor, A_SERVER_TYPES__A_EntityListEvent, type A_SERVER_TYPES__A_EntityListPagination, type A_SERVER_TYPES__A_EntityListPaginationSerialized, type A_SERVER_TYPES__A_EntityListSerialized, type A_SERVER_TYPES__ProxyConfigConstructor, type A_SERVER_TYPES__ProxyConfigConstructorConfig, type A_SERVER_TYPES__RoutesConfig, type A_SERVER_TYPES__ServerConstructor, type A_SERVER_TYPES__ServerError_Init, type A_SERVER_TYPES__ServerError_Serialized, type A_SERVER_TYPES__ServerLoggerEnvVariables, type A_SERVER_TYPES__ServerLoggerRouteParams, type A_SERVER_TYPES__StaticLoader_Init, A_SERVER__A_SERVER_LOGGER_ENV_VARIABLES, A_Server, A_ServerController, A_ServerEntityList, A_ServerEntityListCacheState, A_ServerEntityListPagination, A_ServerError, A_ServerListQueryFilter, A_ServerLogger, A_ServerMiddleware, A_ServerProxy, A_ServerRoute, type A_ServerRouteHttpMethodNames, A_ServerRouteHttpMethods, A_ServerRouteProtocols, A_ServerRouter, A_ServerRouterDefineDecorator, A_ServerRouterMeta, type A_ServerRouterMetaKeyNames, A_ServerRouterMetaKeys, type A_ServerRouterMetaStructure, type A_ServerRouterRouteConfig, type A_ServerRouterRouteDefinition, type A_StaticAlias, A_StaticConfig, type A_StaticDirectoryConfig, A_StaticLoader, type A_TYPES__ServerENVVariables, type A_serverRouteProtocolNames, PROXY_CONFIG_DEFAULTS };

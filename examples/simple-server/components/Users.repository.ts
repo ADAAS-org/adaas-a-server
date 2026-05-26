@@ -1,4 +1,4 @@
-import { A_Component, A_Entity, A_Feature, A_Inject,  A_Scope, A_TYPES__EntityFeatures,  } from "@adaas/a-concept";
+import { A_Component, A_Entity, A_Feature, A_Inject, A_Scope, A_TYPES__EntityFeatures, } from "@adaas/a-concept";
 import { User } from "../entities/User/User.entity";
 import { UserJSON } from "../entities/User/User.entity.types";
 import { SignInCommand } from "../commands/SignIn.command";
@@ -49,7 +49,7 @@ export class UsersRepository extends A_Component {
 
 
     @A_Feature.Extend({
-        name:'load',
+        name: A_TYPES__EntityFeatures.LOAD,
         scope: [A_ServerEntityList]
     })
     list(

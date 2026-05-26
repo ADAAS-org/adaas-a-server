@@ -4,6 +4,7 @@ import { A_Request } from "@adaas/a-server/request/A-Request.entity";
 import { A_Response } from "@adaas/a-server/response/A-Response.entity";
 import { A_Config } from "@adaas/a-utils/a-config";
 import { A_ServerLogger } from "@adaas/a-server/logger/A-ServerLogger.component";
+import { A_HttpServerError } from "../../lib/A-Server/A-HttpServer.error";
 import fs from "fs";
 import path from "path";
 
@@ -29,8 +30,17 @@ export class A_ServerHealthMonitor extends A_Component {
     ): Promise<any> {
         const rootFolder = config.get('A_CONCEPT_ROOT_FOLDER') || A_CONCEPT_ENV.A_CONCEPT_ROOT_FOLDER || process.cwd();
         const pkgPath = path.join(rootFolder, 'package.json');
-        const packageJSON = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
 
+        let packageJSON: Record<string, unknown>;
+
+        try {
+            packageJSON = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+        } catch {
+            throw new A_HttpServerError({
+                status: 500,
+                description: `Could not read package.json at "${pkgPath}"`,
+            });
+        }
 
         const exposedProperties: Array<string> = config.get('EXPOSED_PROPERTIES')?.split(',') || [
             'name',

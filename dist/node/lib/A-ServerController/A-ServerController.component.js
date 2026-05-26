@@ -4,6 +4,7 @@ var aConcept = require('@adaas/a-concept');
 var AServerRouter_component = require('@adaas/a-server/router/A-ServerRouter.component');
 var AResponse_entity = require('@adaas/a-server/response/A-Response.entity');
 var ARequest_entity = require('@adaas/a-server/request/A-Request.entity');
+var AHttpServer_error = require('../A-Server/A-HttpServer.error');
 
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -19,17 +20,29 @@ var __decorateParam = (index, decorator) => (target, key) => decorator(target, k
 class A_ServerController extends aConcept.A_Component {
   async callEntityMethod(request, response, scope) {
     if (!scope.has(request.params.component))
-      return;
+      throw new AHttpServer_error.A_HttpServerError({
+        status: 404,
+        description: `Component "${request.params.component}" not found`
+      });
     if (!request.params.operation || typeof request.params.operation !== "string")
-      return;
+      throw new AHttpServer_error.A_HttpServerError({
+        status: 400,
+        description: 'Missing or invalid "operation" parameter'
+      });
     const possibleComponent = scope.resolve(request.params.component);
     if (!possibleComponent || ![aConcept.A_Component, aConcept.A_Container].some((c) => possibleComponent instanceof c))
-      return;
+      throw new AHttpServer_error.A_HttpServerError({
+        status: 404,
+        description: `"${request.params.component}" is not a valid component`
+      });
     const component = possibleComponent;
     const meta = aConcept.A_Context.meta(component);
     const targetFeature = meta.features().find((f) => f.name === `${component.constructor.name}.${request.params.operation}`);
     if (!targetFeature)
-      return;
+      throw new AHttpServer_error.A_HttpServerError({
+        status: 404,
+        description: `Operation "${request.params.operation}" not found on component "${request.params.component}"`
+      });
     await component.call(request.params.operation, scope);
   }
 }

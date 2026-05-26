@@ -32,7 +32,7 @@ export class A_ServerCORS extends A_ServerMiddleware {
     }
 
 
-    @A_HttpServer.onAfterRequest
+    @A_HttpServer.onBeforeRequest
     public apply(
         @A_Inject(A_Request) aReq: A_Request,
         @A_Inject(A_Response) aRes: A_Response,
